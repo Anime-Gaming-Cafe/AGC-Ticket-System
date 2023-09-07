@@ -16,6 +16,7 @@
     <PackageReference Include="DisCatSharp.Interactivity" Version="10.4.2-nightly-020" />
     <PackageReference Include="DisCatSharp.VoiceNext" Version="10.4.2-nightly-020" />
     <PackageReference Include="ini-parser-new" Version="2.6.2" />
+    <PackageReference Include="Npgsql" Version="7.0.4" />
   </ItemGroup>
 
 </Project>
