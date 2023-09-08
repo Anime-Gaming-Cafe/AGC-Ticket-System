@@ -29,37 +29,18 @@ internal class Program : BaseCommandModule
             .CreateLogger();
 
         logger.Information("Starting AGC-TicketSystem...");
-        bool DebugMode;
-        try
-        {
-            DebugMode = bool.Parse(BotConfig.GetConfig()["MainConfig"]["DebugMode"]);
-        }
-        catch
-        {
-            DebugMode = false;
-        }
-
         string DcApiToken = "";
         try
         {
-            DcApiToken = DebugMode
-                ? BotConfig.GetConfig()["MainConfig"]["Discord_API_Token_DEB"]
-                : BotConfig.GetConfig()["MainConfig"]["Discord_API_Token"];
+            DcApiToken = BotConfig.GetConfig()["MainConfig"]["Discord_API_Token"];
         }
         catch
         {
-            try
-            {
-                DcApiToken = BotConfig.GetConfig()["MainConfig"]["Discord_API_Token"];
-            }
-            catch
-            {
-                Console.WriteLine(
-                    "Der Discord API Token konnte nicht geladen werden.");
-                Console.WriteLine("Drücke eine beliebige Taste um das Programm zu beenden.");
-                Console.ReadKey();
-                Environment.Exit(0);
-            }
+            Console.WriteLine(
+                "Der Discord API Token konnte nicht geladen werden.");
+            Console.WriteLine("Drücke eine beliebige Taste um das Programm zu beenden.");
+            Console.ReadKey();
+            Environment.Exit(0);
         }
 
 
@@ -79,7 +60,7 @@ internal class Program : BaseCommandModule
             MinimumLogLevel = LogLevel.Debug,
             Intents = DiscordIntents.All,
             LogTimestampFormat = "MMM dd yyyy - HH:mm:ss tt",
-            DeveloperUserId = GlobalProperties.BotOwnerId,
+            DeveloperUserId = ulong.Parse(BotConfig.GetConfig()["MainConfig"]["BotOwnerId"]),
             Locale = "de",
             ServiceProvider = serviceProvider
         });
@@ -116,17 +97,15 @@ internal class Program : BaseCommandModule
         return Task.Run(() =>
         {
             string prefix;
-            if (GlobalProperties.DebugMode)
-                prefix = "!!!";
-            else
-                try
-                {
-                    prefix = BotConfig.GetConfig()["MainConfig"]["BotPrefix"];
-                }
-                catch
-                {
-                    prefix = "!!!"; //Fallback Config
-                }
+            try
+            {
+                prefix = BotConfig.GetConfig()["MainConfig"]["BotPrefix"];
+            }
+            catch
+            {
+                prefix = "!!!"; //Fallback Config
+            }
+
 
             int CommandStart = -1;
             CommandStart = message.GetStringPrefixLength(prefix);
@@ -158,12 +137,6 @@ public static class GlobalProperties
 {
     // Server Staffrole ID
     public static ulong StaffRoleId { get; } = ulong.Parse(BotConfig.GetConfig()["ServerConfig"]["StaffRoleId"]);
-
-    // Debug Mode
-    public static bool DebugMode { get; } = false;
-
-    // Bot Owner ID
-    public static ulong BotOwnerId { get; } = ulong.Parse(BotConfig.GetConfig()["MainConfig"]["BotOwnerId"]);
 
     private static bool ParseBoolean(string boolString)
     {
