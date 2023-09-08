@@ -28,7 +28,7 @@ internal class Program : BaseCommandModule
             .WriteTo.Console()
             .CreateLogger();
 
-        logger.Information("Starting AGC Management Bot...");
+        logger.Information("Starting AGC-TicketSystem...");
         bool DebugMode;
         try
         {
@@ -160,7 +160,7 @@ public static class GlobalProperties
     public static ulong StaffRoleId { get; } = ulong.Parse(BotConfig.GetConfig()["ServerConfig"]["StaffRoleId"]);
 
     // Debug Mode
-    public static bool DebugMode { get; } = ParseBoolean(BotConfig.GetConfig()["MainConfig"]["DebugMode"]);
+    public static bool DebugMode { get; } = false;
 
     // Bot Owner ID
     public static ulong BotOwnerId { get; } = ulong.Parse(BotConfig.GetConfig()["MainConfig"]["BotOwnerId"]);
