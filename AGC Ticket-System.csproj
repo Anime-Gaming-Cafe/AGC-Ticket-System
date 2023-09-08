@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="src\Eventlistener\" />
     <Folder Include="src\Services\Helpers\" />
   </ItemGroup>
 
