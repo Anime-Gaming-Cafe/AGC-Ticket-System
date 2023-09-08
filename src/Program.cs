@@ -13,6 +13,7 @@ using System.Reflection;
 using DisCatSharp.Interactivity.Extensions;
 using Serilog;
 using DisCatSharp.Exceptions;
+using System.Reflection.Metadata.Ecma335;
 
 internal class Program : BaseCommandModule
 {
@@ -88,6 +89,7 @@ internal class Program : BaseCommandModule
 
     private static Task StartTasks(DiscordClient discord)
     {
+        // UpdatePresence(discord);
         return Task.CompletedTask;
     }
 
@@ -113,6 +115,17 @@ internal class Program : BaseCommandModule
         });
     }
 
+    private static async Task UpdatePresence(DiscordClient client) 
+    {
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            while (true)
+            {
+                await client.UpdateStatusAsync(new DiscordActivity(name: "Tickets: Offen: _ | Gesamt: _", type: ActivityType.Custom));
+                await Task.Delay(TimeSpan.FromMinutes(2));
+            }
+        }
+    }
 
     private static Task Discord_ClientErrored(DiscordClient sender, ClientErrorEventArgs e)
     {
