@@ -165,7 +165,7 @@ public class TicketManagerHelper
         {;
             int prev_tickets = await TicketManagerHelper.GetTicketCountFromThisUser((long)interaction.User.Id);
             var eb = new DiscordEmbedBuilder()
-                .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl).WithColor(DiscordColor.Blurple).WithFooter($"Nutzer-ID: {interaction.User.Id} • Ticket-ID: {await GetTicketIdFromChannel(interaction.Channel)}")
+                .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl).WithColor(DiscordColor.Blurple).WithFooter($"AGC-Support-System")
                 .WithDescription($"Hey! Danke fürs öffnen eines Report-Tickets. Ein Teammitglied wird sich gleich um dein Anliegen kümmern. Bitte teile uns in der Zeit alle nötigen Infos mit.\n" +
                                $"1. Um wen geht es (User-ID oder User-Name)\n" +
                                               $"2. Was ist vorgefallen (Bitte versuche die Situation so ausführlich wie möglich zu beschreiben)" +
