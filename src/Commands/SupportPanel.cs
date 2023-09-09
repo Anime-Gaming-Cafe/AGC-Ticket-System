@@ -63,9 +63,9 @@ public class SupportPanelListener : SupportPanel
                 DiscordEmbed embed = new DiscordEmbedBuilder()
                 .WithTitle("Wähle eine Supportkategorie aus")
                 .WithDescription("Wähle unten eine Supportkategorie aus. Dies hilft uns dein Ticket schneller zuzuordnen." +
-                "Nach auswahl der Kategorie wird ein Ticket erstellt, bitte schlilder anschließend im Ticket dein Anliegen.\n\n" +
+                "Nach Auswahl der Kategorie wird ein Ticket erstellt, bitte schlildere anschließend im Ticket dein Anliegen.\n\n" +
                 "> Report / Melden \n" +
-                "Hier kannst du einen Benutzer melden, der gegen Regeln verstößt oder anderweitig auffällt \n\n" +
+                "Hier kannst du einen Benutzer melden der gegen Regeln verstößt oder anderweitig auffällt. \n\n" +
                 "> Support \n" +
                 "Hier kannst du dich bei generellen Anliegen melden").WithColor(BotConfig.GetEmbedColor());
 
