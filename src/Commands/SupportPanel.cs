@@ -6,6 +6,7 @@ using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using AGC_Ticket_System.Components;
+using AGC_Ticket_System.Helper;
 
 namespace AGC_Ticket_System.Commands;
 
@@ -70,6 +71,16 @@ public class SupportPanelListener : SupportPanel
                 var ib = new DiscordInteractionResponseBuilder().AsEphemeral().AddComponents(buttons).AddEmbed(embed);
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, ib);
             }
+            // handle ticket opening 
+            if (e.Interaction.Data.CustomId == "ticket_open_report")
+            {
+                await TicketManager.OpenTicket(e.Interaction, TicketType.Report, client);
+            }
+            else if (e.Interaction.Data.CustomId == "ticket_open_support")
+            {
+                await TicketManager.OpenTicket(e.Interaction, TicketType.Support, client);
+            }
+
             return Task.CompletedTask;
         });
     }

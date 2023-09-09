@@ -82,6 +82,11 @@ public static class DatabaseService
         }
     }
 
+    public static NpgsqlConnection? GetConnection()
+    {
+        return dbConnection;
+    }
+
     public static string GetConnectionString()
     {
         var dbConfigSection = "DatabaseCfg";
