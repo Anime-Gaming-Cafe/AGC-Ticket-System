@@ -10,6 +10,7 @@ using DisCatSharp.Interactivity;
 using DisCatSharp.Interactivity.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Serilog;
 using System.Reflection;
 
@@ -87,7 +88,7 @@ internal class Program : BaseCommandModule
 
     private static Task StartTasks(DiscordClient discord)
     {
-        // UpdatePresence(discord);
+        UpdatePresence(discord);
         return Task.CompletedTask;
     }
 
@@ -119,11 +120,23 @@ internal class Program : BaseCommandModule
             await Task.Delay(TimeSpan.FromSeconds(5));
             while (true)
             {
-                await client.UpdateStatusAsync(new DiscordActivity(name: "Tickets: Offen: _ | Gesamt: _", type: ActivityType.Custom));
+                int openTickets = 0;
+                int closedTickets = 0;
+                var con = DatabaseService.GetConnection();
+                string query = "SELECT COUNT(*) FROM ticketstore where closed = False";
+                await using NpgsqlCommand cmd = new(query, con);
+                openTickets = Convert.ToInt32(cmd.ExecuteScalar());
+
+                string query1 = "SELECT COUNT(*) FROM ticketstore where closed = True";
+                await using NpgsqlCommand cmd1 = new(query1, con);
+                closedTickets = Convert.ToInt32(cmd1.ExecuteScalar());
+
+                await client.UpdateStatusAsync(new DiscordActivity(name: $"Tickets: Offen: {openTickets} | Gesamt: {openTickets + closedTickets}", type: ActivityType.Custom));
                 await Task.Delay(TimeSpan.FromMinutes(2));
             }
         }
     }
+
 
     private static Task Discord_ClientErrored(DiscordClient sender, ClientErrorEventArgs e)
     {
