@@ -116,7 +116,7 @@ public class TicketManagerHelper
                 int prev_tickets = await TicketManagerHelper.GetTicketCountFromThisUser((long)interaction.User.Id);
                 string pingstring = $"{interaction.User.Mention} | <@{BotConfig.GetConfig()["SupportConfig"]["TeamRoleId"]}";
                 var eb = new DiscordEmbedBuilder()
-                    .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl).WithColor(DiscordColor.Blurple).WithFooter($"Nutzer-ID: {interaction.User.Id} • Ticket-ID: {await GetTicketIdFromChannel(interaction.Channel)}")
+                    .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl).WithColor(DiscordColor.Blurple).WithFooter($"Nutzer-ID: {interaction.User.Id} • Ticket-ID: {await GetTicketIdFromChannel(tchannel)}")
                     .WithDescription($"**Ticket-Typ: Report-Ticket**");
                 var mb = new DiscordMessageBuilder();
                 mb.WithContent(pingstring);
@@ -141,7 +141,7 @@ public class TicketManagerHelper
                 int prev_tickets = await TicketManagerHelper.GetTicketCountFromThisUser((long)interaction.User.Id);
                 string pingstring = $"{interaction.User.Mention} | <@{BotConfig.GetConfig()["SupportConfig"]["TeamRoleId"]}";
                 var eb = new DiscordEmbedBuilder()
-                    .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl).WithColor(DiscordColor.Blurple).WithFooter($"Nutzer-ID: {interaction.User.Id} • Ticket-ID: {await GetTicketIdFromChannel(interaction.Channel)}")
+                    .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl).WithColor(DiscordColor.Blurple).WithFooter($"Nutzer-ID: {interaction.User.Id} • Ticket-ID: {await GetTicketIdFromChannel(tchannel)}")
                     .WithDescription($"**Ticket-Typ: Support-Ticket**");
                 var mb = new DiscordMessageBuilder();
                 mb.WithContent(pingstring);
