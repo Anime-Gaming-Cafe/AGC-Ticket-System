@@ -180,7 +180,29 @@ public class TicketManagerHelper
         }
     }
 
+    public static async Task DeleteTicket(DiscordInteraction interaction)
+    {
+        var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
+        if (!teamler)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
+            return;
+        }
 
+        // TODO: Generate Transscript
+
+        DiscordEmbed ebct = new DiscordEmbedBuilder()
+            .WithTitle("Ticket wird gelöscht")
+            .WithDescription($"Löschen eingeleitet von {interaction.User.Mention} {interaction.User.UsernameWithDiscriminator} ``{interaction.User.Id} \nTicket wird in 10 Sekunden gelöscht.``")
+            .WithColor(BotConfig.GetEmbedColor())
+            .WithFooter($"AGC-Support-System").Build();
+
+        DiscordChannel channel = interaction.Channel;
+        await channel.SendMessageAsync(ebct);
+        await Task.Delay(TimeSpan.FromSeconds(10));
+        await channel.DeleteAsync(reason: "Ticket wurde gelöscht");
+    }
 
     public static async Task ClaimTicket(ComponentInteractionCreateEventArgs interaction)
     {
