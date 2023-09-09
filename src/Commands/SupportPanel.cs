@@ -7,6 +7,7 @@ using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Helper;
+using AGC_Ticket_System.Enums;
 
 namespace AGC_Ticket_System.Commands;
 
