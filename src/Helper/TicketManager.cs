@@ -231,9 +231,9 @@ public class TicketManagerHelper
         DiscordChannel channel = interaction.Channel;
         await channel.SendMessageAsync(mb);
         await Task.Delay(TimeSpan.FromSeconds(5));
+        await TicketManager.SendTranscriptToLog(channel, transcriptURL);
         await channel.DeleteAsync(reason: "Ticket wurde gelöscht");
         await TicketManager.DeleteCache(channel);
-        await TicketManager.SendTranscriptToLog(channel, transcriptURL);
     }
 
     public static async Task ClaimTicket(ComponentInteractionCreateEventArgs interaction)
@@ -578,6 +578,24 @@ public class TicketManager : BaseCommandModule
             return;
         }
         await interaction.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+        var message = await ticket_channel.GetMessageAsync(interaction.Message.Id);
+        var umb = new DiscordMessageBuilder();
+        umb.WithContent(message.Content);
+        umb.WithEmbed(message.Embeds[0]);
+        var components = TicketComponents.GetClosedTicketActionRow();
+        List<DiscordActionRowComponent> row = new()
+        {
+            new DiscordActionRowComponent(components)
+        };
+        umb.AddComponents(row);
+        await message.ModifyAsync(umb);
+        var ceb = new DiscordEmbedBuilder
+        {
+            Description = "Ticket wird geschlossen..",
+            Color = DiscordColor.Yellow
+        };
+        await ticket_channel.SendMessageAsync(ceb);
+
 
         var eb1 = new DiscordEmbedBuilder
         {
@@ -597,18 +615,7 @@ public class TicketManager : BaseCommandModule
 
         await msg.ModifyAsync(eb1.Build());
 
-        // disable all buttons
-        var message = await ticket_channel.GetMessageAsync(interaction.Message.Id);
-        var umb = new DiscordMessageBuilder();
-        umb.WithContent(message.Content);
-        umb.WithEmbed(message.Embeds[0]);
-        var components = TicketComponents.GetClosedTicketActionRow();
-        List<DiscordActionRowComponent> row = new()
-        {
-            new DiscordActionRowComponent(components)
-        };
-        umb.AddComponents(row);
-        await message.ModifyAsync(umb);
+
 
         var con = DatabaseService.GetConnection();
         string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ticket_channel.Id}'";
@@ -716,7 +723,7 @@ public class TicketManager : BaseCommandModule
         var tick = await TicketManagerHelper.GetTicketIdFromChannel(ticket_channel);
         var id = TicketManagerHelper.GenerateTicketID(3);
         psi.FileName = "DiscordChatExporter.Cli.exe";
-        psi.Arguments = $"export -t \"{BotToken}\" -c {ticket_channel.Id} --media --reuse-media --o Tickets\\{tick}-{id}.html"; // Enclose the token in double quotes
+        psi.Arguments = $"export -t \"{BotToken}\" -c {ticket_channel.Id} --media --reuse-media --media-dir Tickets\\Assets -o Tickets\\{tick}-{id}.html";
         psi.RedirectStandardOutput = true;
         var process = new Process();
         process.StartInfo = psi;
