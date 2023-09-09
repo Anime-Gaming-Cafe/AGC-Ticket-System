@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AGC_Ticket.Services.DatabaseHandler;
+﻿using AGC_Ticket.Services.DatabaseHandler;
 
 namespace AGC_Ticket_System.Components
 {

@@ -1,6 +1,5 @@
 ﻿using Npgsql;
 using System.Data;
-using System.Net.NetworkInformation;
 
 namespace AGC_Ticket.Services.DatabaseHandler;
 

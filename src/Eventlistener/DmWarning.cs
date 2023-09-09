@@ -1,14 +1,9 @@
-﻿using DisCatSharp.CommandsNext;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DisCatSharp.Enums;
+﻿using AGC_Ticket;
 using DisCatSharp;
-using DisCatSharp.EventArgs;
+using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
-using AGC_Ticket;
+using DisCatSharp.Enums;
+using DisCatSharp.EventArgs;
 
 namespace AGC_Ticket_System.Eventlistener;
 

@@ -1,19 +1,17 @@
-﻿using AGC_Ticket.Services.DatabaseHandler;
-using AGC_Ticket;
-using DisCatSharp.CommandsNext.Exceptions;
+﻿using AGC_Ticket;
+using AGC_Ticket.Services.DatabaseHandler;
+using DisCatSharp;
 using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Exceptions;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using DisCatSharp.Interactivity;
-using DisCatSharp;
+using DisCatSharp.Interactivity.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
-using DisCatSharp.Interactivity.Extensions;
 using Serilog;
-using DisCatSharp.Exceptions;
-using System.Reflection.Metadata.Ecma335;
+using System.Reflection;
 
 internal class Program : BaseCommandModule
 {
@@ -115,7 +113,7 @@ internal class Program : BaseCommandModule
         });
     }
 
-    private static async Task UpdatePresence(DiscordClient client) 
+    private static async Task UpdatePresence(DiscordClient client)
     {
         {
             await Task.Delay(TimeSpan.FromSeconds(5));

@@ -1,16 +1,13 @@
-﻿using AGC_Ticket.Services.DatabaseHandler;
-using DisCatSharp.Entities;
-using Npgsql;
-using System.Net.Sockets;
-using DisCatSharp.Enums;
-using AGC_Ticket;
+﻿using AGC_Ticket;
+using AGC_Ticket.Services.DatabaseHandler;
 using AGC_Ticket_System.Components;
+using AGC_Ticket_System.Enums;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
+using DisCatSharp.Entities;
+using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
-using System.ComponentModel;
-using AGC_Ticket_System.Enums;
-using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace AGC_Ticket_System.Helper;
 
@@ -25,7 +22,7 @@ public class TicketManagerHelper
     {
         var con = DatabaseService.GetConnection();
         string query = $"SELECT COUNT(*) FROM ticketstore where tickettype = '{ticketType.ToString().ToLower()}'";
-        await using NpgsqlCommand cmd = new (query, con);
+        await using NpgsqlCommand cmd = new(query, con);
         int rowCount = Convert.ToInt32(cmd.ExecuteScalar());
         return rowCount;
     }
@@ -71,7 +68,7 @@ public class TicketManagerHelper
         {
             channel_id = reader.GetInt64(0);
         }
-        
+
         return channel_id;
     }
 
@@ -162,7 +159,8 @@ public class TicketManagerHelper
     public static async Task SendUserNotice(DiscordInteraction interaction, DiscordChannel ticket_channel, TicketType ticketType)
     {
         if (ticketType == TicketType.Report)
-        {;
+        {
+            ;
             int prev_tickets = await TicketManagerHelper.GetTicketCountFromThisUser((long)interaction.User.Id);
             var eb = new DiscordEmbedBuilder()
                 .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl).WithColor(DiscordColor.Blurple).WithFooter($"AGC-Support-System")
@@ -296,7 +294,7 @@ public class TicketManagerEventHandler : BaseCommandModule
 
             return Task.CompletedTask;
         });
-        
+
     }
 }
 
@@ -309,7 +307,7 @@ public static class TicketManager
         long guildid = (long)interaction.Guild.Id;
         string ticketid = TicketManagerHelper.GenerateTicketID();
         bool existing_ticket = await TicketManagerHelper.CheckForOpenTicket(memberid);
-        if (existing_ticket) 
+        if (existing_ticket)
         {
             long tchannelId = await TicketManagerHelper.GetOpenTicketChannel(memberid);
             var tbutton = new DiscordLinkButtonComponent("https://discord.com/channels/" + guildid + "/" + tchannelId, "Zum Ticket");
@@ -339,7 +337,7 @@ public static class TicketManager
             await cmd.ExecuteNonQueryAsync();
 
             ticket_channel = await interaction.Guild.CreateChannelAsync($"report-{ticket_number}", ChannelType.Text, Ticket_category, $"Ticket erstellt von {interaction.User.UsernameWithDiscriminator}");
-           
+
             await using NpgsqlCommand cmd2 = new($"INSERT INTO ticketcache (ticket_id, ticket_owner, tchannel_id, claimed) VALUES ('{ticketid}', '{memberid}', '{ticket_channel.Id}', False)", con);
             await cmd2.ExecuteNonQueryAsync();
             await Task.Delay(TimeSpan.FromSeconds(2));
