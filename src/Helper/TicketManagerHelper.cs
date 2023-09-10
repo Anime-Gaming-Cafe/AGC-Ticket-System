@@ -126,7 +126,7 @@ public class TicketManagerHelper
             .WithColor(DiscordColor.Blurple)
             .WithFooter(
                 $"Nutzer-ID: {member.Id} • Ticket-ID: {await GetTicketIdFromChannel(tchannel)}")
-            .WithDescription("**Ticket-Typ: Report-Ticket**");
+            .WithDescription("**Ticket-Typ: Support-Ticket**");
         var mb = new DiscordMessageBuilder();
         mb.WithContent(pingstring);
         mb.WithEmbed(eb.Build());
