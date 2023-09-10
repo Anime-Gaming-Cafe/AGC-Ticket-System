@@ -9,6 +9,7 @@ using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using DisCatSharp.Interactivity.Extensions;
+using Microsoft.VisualBasic;
 using Npgsql;
 using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
@@ -117,6 +118,29 @@ public class TicketManagerHelper
 
         return ticket_id;
     }
+    public static async Task InsertHeaderIntoTicket(CommandContext ctx, DiscordChannel tchannel, DiscordMember member)
+    {
+        string pingstring = $"{member.Mention} | {ctx.User.Mention}";
+        var ticket_channel = tchannel;
+        int prev_tickets = await GetTicketCountFromThisUser((long)ctx.User.Id);
+        var eb = new DiscordEmbedBuilder()
+            .WithAuthor(member.UsernameWithDiscriminator, ctx.User.AvatarUrl)
+            .WithColor(DiscordColor.Blurple)
+            .WithFooter(
+                $"Nutzer-ID: {member.Id} • Ticket-ID: {await GetTicketIdFromChannel(tchannel)}")
+            .WithDescription("**Ticket-Typ: Report-Ticket**");
+        var mb = new DiscordMessageBuilder();
+        mb.WithContent(pingstring);
+        mb.WithEmbed(eb.Build());
+        var rowComponents = TicketComponents.GetTicketActionRow();
+        List<DiscordActionRowComponent> row = new()
+        {
+            new DiscordActionRowComponent(rowComponents)
+        };
+
+        mb.AddComponents(row);
+        await ticket_channel.SendMessageAsync(mb);
+    }
 
     public static async Task InsertHeaderIntoTicket(DiscordInteraction interaction, DiscordChannel tchannel,
         TicketCreator ticketCreator, TicketType ticketType)
@@ -203,6 +227,16 @@ public class TicketManagerHelper
         }
 
         return additionalNotes;
+    }
+
+    public static async Task SendStaffNotice(CommandContext ctx, DiscordChannel ticket_channel, DiscordMember user)
+    {
+        var eb = new DiscordEmbedBuilder()
+            .WithAuthor(ctx.User.UsernameWithDiscriminator, ctx.User.AvatarUrl)
+            .WithColor(DiscordColor.Blurple).WithFooter("AGC-Support-System")
+            .WithDescription(
+                           $"Hey {user.Mention}. Ein Ticket wurde von {ctx.User.Mention} mit dir erstellt. Bitte warte ab, bis sich das Teammitglied bei dir meldet.");
+        await ticket_channel.SendMessageAsync(eb);
     }
 
     public static async Task SendUserNotice(DiscordInteraction interaction, DiscordChannel ticket_channel,
@@ -315,6 +349,41 @@ public class TicketManagerHelper
         await cmd3.ExecuteNonQueryAsync();
     }
 
+    public static async Task AddUserToTicket(CommandContext ctx, DiscordChannel ticket_channel, DiscordUser user, bool addedAfter = false)
+    {
+        var con = DatabaseService.GetConnection();
+        string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ticket_channel.Id}'";
+        await using NpgsqlCommand cmd = new(query, con);
+        await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
+        string ticket_id = "";
+        while (reader.Read())
+        {
+            ticket_id = reader.GetString(0);
+        }
+
+        await reader.CloseAsync();
+        await using NpgsqlCommand cmd2 =
+            new(
+                $"UPDATE ticketcache SET ticket_users = array_append(ticket_users, '{(long)user.Id}') WHERE ticket_id = '{ticket_id}'",
+                con);
+        await cmd2.ExecuteNonQueryAsync();
+        // add perms 
+        var channel = ticket_channel;
+        var member = await ctx.Guild.GetMemberAsync(user.Id);
+        await channel.AddOverwriteAsync(member,
+            Permissions.AccessChannels | Permissions.SendMessages | Permissions.AddReactions | Permissions.AttachFiles |
+            Permissions.EmbedLinks);
+        if (addedAfter)
+        {
+            var afteraddembed = new DiscordEmbedBuilder
+            {
+                Title = "User hinzugefügt",
+                Description = $"Der User {user.Mention} ``{user.Id}`` wurde zum Ticket hinzugefügt!",
+                Color = DiscordColor.Green
+            };
+            await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(afteraddembed));
+        }
+    }
 
     public static async Task AddUserToTicket(DiscordInteraction interaction, DiscordChannel ticket_channel,
         DiscordUser user, bool addedAfter = false)

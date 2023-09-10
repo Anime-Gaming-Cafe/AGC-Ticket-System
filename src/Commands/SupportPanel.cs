@@ -80,11 +80,11 @@ public class SupportPanelListener : SupportPanel
             // handle ticket opening 
             if (e.Interaction.Data.CustomId == "ticket_open_report")
             {
-                await TicketManager.OpenTicket(e.Interaction, TicketType.Report, client);
+                await TicketManager.OpenTicket(e.Interaction, TicketType.Report, client, TicketCreator.User);
             }
             else if (e.Interaction.Data.CustomId == "ticket_open_support")
             {
-                await TicketManager.OpenTicket(e.Interaction, TicketType.Support, client);
+                await TicketManager.OpenTicket(e.Interaction, TicketType.Support, client, TicketCreator.User);
             }
 
             return Task.CompletedTask;

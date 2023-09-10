@@ -4,107 +4,160 @@ using AGC_Ticket.Services.DatabaseHandler;
 using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Enums;
 using DisCatSharp;
+using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
+using Microsoft.VisualBasic;
 using Npgsql;
 
 namespace AGC_Ticket_System.Helper;
 
 public class TicketManager
 {
-    public static async Task OpenTicket(DiscordInteraction interaction, TicketType ticketType, DiscordClient client)
+    public static async Task<DiscordChannel?> OpenTicket(CommandContext context, TicketType ticketType, TicketCreator ticketCreator, DiscordMember discordMember)
     {
-        long memberid = (long)interaction.User.Id;
-        long guildid = (long)interaction.Guild.Id;
+        long memberid = (long)discordMember.Id;
+        long guildid = (long)context.Guild.Id;
         string ticketid = TicketManagerHelper.GenerateTicketID();
         bool existing_ticket = await TicketManagerHelper.CheckForOpenTicket(memberid);
         if (existing_ticket)
         {
             long tchannelId = await TicketManagerHelper.GetOpenTicketChannel(memberid);
             var tbutton = new DiscordLinkButtonComponent("https://discord.com/channels/" + guildid + "/" + tchannelId,
-                "Zum Ticket");
-            var eb = new DiscordEmbedBuilder
+                                   "Zum Ticket");
+            var eb = new DiscordEmbedBuilder()
             {
                 Title = "Fehler | Bereits ein Ticket geöffnet!",
-                Description =
-                    $"Du hast bereits ein geöffnetes Ticket! -> <#{await TicketManagerHelper.GetOpenTicketChannel((long)interaction.User.Id)}>",
+                Description = $"Der User hat bereits ein geöffnetes Ticket! -> <#{await TicketManagerHelper.GetOpenTicketChannel((long)context.Member.Id)}>",
                 Color = DiscordColor.Red
             };
-            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().AddEmbed(eb).AddComponents(tbutton).AsEphemeral());
-            return;
+            var mb = new DiscordMessageBuilder().AddComponents(tbutton).AddEmbed(eb);
+            await context.RespondAsync(mb);
+            return null;
         }
-
-        var cre_emb = new DiscordEmbedBuilder
-        {
-            Title = "Ticket erstellen",
-            Description = "Du hast ein Ticket erstellt! Bitte warte einen Augenblick...",
-            Color = DiscordColor.Blurple
-        };
-        await interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-            new DiscordInteractionResponseBuilder().AddEmbed(cre_emb).AsEphemeral());
-        int ticket_number = await TicketManagerHelper.GetPreviousTicketCount(ticketType) + 1;
         DiscordChannel Ticket_category =
-            interaction.Guild.GetChannel(ulong.Parse(BotConfig.GetConfig()["SupportConfig"]["SupportCategoryId"]));
+            context.Guild.GetChannel(ulong.Parse(BotConfig.GetConfig()["SupportConfig"]["SupportCategoryId"]));
         DiscordChannel? ticket_channel = null;
-        if (ticketType == TicketType.Report)
+        int ticket_number = await TicketManagerHelper.GetPreviousTicketCount(ticketType) + 1;
+        var con = DatabaseService.GetConnection();
+        await using NpgsqlCommand cmd =
+            new(
+                $"INSERT INTO ticketstore (ticket_id, ticket_owner, tickettype, closed) VALUES ('{ticketid}', '{memberid}', '{ticketType.ToString().ToLower()}', False)",
+                con);
+        await cmd.ExecuteNonQueryAsync();
+
+        ticket_channel = await context.Guild.CreateChannelAsync($"support-{ticket_number}", ChannelType.Text,
+            Ticket_category, $"Ticket erstellt von {context.User.UsernameWithDiscriminator} zu {discordMember.UsernameWithDiscriminator}");
+
+        await using NpgsqlCommand cmd2 =
+            new(
+                $"INSERT INTO ticketcache (ticket_id, ticket_owner, tchannel_id, claimed) VALUES ('{ticketid}', '{memberid}', '{ticket_channel.Id}', False)",
+                con);
+        await cmd2.ExecuteNonQueryAsync();
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        await TicketManagerHelper.AddUserToTicket(context, ticket_channel, discordMember);
+        await TicketManagerHelper.InsertHeaderIntoTicket(context, ticket_channel, discordMember);
+        await TicketManagerHelper.SendStaffNotice(context, ticket_channel, discordMember);
+        return ticket_channel;
+
+    }
+
+    public static async Task OpenTicket(DiscordInteraction interaction, TicketType ticketType, DiscordClient client, TicketCreator ticketCreator)
+    {
+        if (ticketCreator == TicketCreator.User)
         {
-            var con = DatabaseService.GetConnection();
-            await using NpgsqlCommand cmd =
-                new(
-                    $"INSERT INTO ticketstore (ticket_id, ticket_owner, tickettype, closed) VALUES ('{ticketid}', '{memberid}', '{ticketType.ToString().ToLower()}', False)",
-                    con);
-            await cmd.ExecuteNonQueryAsync();
+            long memberid = (long)interaction.User.Id;
+            long guildid = (long)interaction.Guild.Id;
+            string ticketid = TicketManagerHelper.GenerateTicketID();
+            bool existing_ticket = await TicketManagerHelper.CheckForOpenTicket(memberid);
+            if (existing_ticket)
+            {
+                long tchannelId = await TicketManagerHelper.GetOpenTicketChannel(memberid);
+                var tbutton = new DiscordLinkButtonComponent("https://discord.com/channels/" + guildid + "/" + tchannelId,
+                    "Zum Ticket");
+                var eb = new DiscordEmbedBuilder
+                {
+                    Title = "Fehler | Bereits ein Ticket geöffnet!",
+                    Description =
+                        $"Du hast bereits ein geöffnetes Ticket! -> <#{await TicketManagerHelper.GetOpenTicketChannel((long)interaction.User.Id)}>",
+                    Color = DiscordColor.Red
+                };
+                await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().AddEmbed(eb).AddComponents(tbutton).AsEphemeral());
+                return;
+            }
 
-            ticket_channel = await interaction.Guild.CreateChannelAsync($"report-{ticket_number}", ChannelType.Text,
-                Ticket_category, $"Ticket erstellt von {interaction.User.UsernameWithDiscriminator}");
+            var cre_emb = new DiscordEmbedBuilder
+            {
+                Title = "Ticket erstellen",
+                Description = "Du hast ein Ticket erstellt! Bitte warte einen Augenblick...",
+                Color = DiscordColor.Blurple
+            };
+            await interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AddEmbed(cre_emb).AsEphemeral());
+            int ticket_number = await TicketManagerHelper.GetPreviousTicketCount(ticketType) + 1;
+            DiscordChannel Ticket_category =
+                interaction.Guild.GetChannel(ulong.Parse(BotConfig.GetConfig()["SupportConfig"]["SupportCategoryId"]));
+            DiscordChannel? ticket_channel = null;
+            if (ticketType == TicketType.Report)
+            {
+                var con = DatabaseService.GetConnection();
+                await using NpgsqlCommand cmd =
+                    new(
+                        $"INSERT INTO ticketstore (ticket_id, ticket_owner, tickettype, closed) VALUES ('{ticketid}', '{memberid}', '{ticketType.ToString().ToLower()}', False)",
+                        con);
+                await cmd.ExecuteNonQueryAsync();
 
-            await using NpgsqlCommand cmd2 =
-                new(
-                    $"INSERT INTO ticketcache (ticket_id, ticket_owner, tchannel_id, claimed) VALUES ('{ticketid}', '{memberid}', '{ticket_channel.Id}', False)",
-                    con);
-            await cmd2.ExecuteNonQueryAsync();
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            await TicketManagerHelper.AddUserToTicket(interaction, ticket_channel, interaction.User);
-            await TicketManagerHelper.InsertHeaderIntoTicket(interaction, ticket_channel, TicketCreator.User,
-                TicketType.Report);
+                ticket_channel = await interaction.Guild.CreateChannelAsync($"report-{ticket_number}", ChannelType.Text,
+                    Ticket_category, $"Ticket erstellt von {interaction.User.UsernameWithDiscriminator}");
+
+                await using NpgsqlCommand cmd2 =
+                    new(
+                        $"INSERT INTO ticketcache (ticket_id, ticket_owner, tchannel_id, claimed) VALUES ('{ticketid}', '{memberid}', '{ticket_channel.Id}', False)",
+                        con);
+                await cmd2.ExecuteNonQueryAsync();
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                await TicketManagerHelper.AddUserToTicket(interaction, ticket_channel, interaction.User);
+                await TicketManagerHelper.InsertHeaderIntoTicket(interaction, ticket_channel, TicketCreator.User,
+                    TicketType.Report);
+            }
+            else if (ticketType == TicketType.Support)
+            {
+                var con = DatabaseService.GetConnection();
+                await using NpgsqlCommand cmd =
+                    new(
+                        $"INSERT INTO ticketstore (ticket_id, ticket_owner, tickettype, closed) VALUES ('{ticketid}', '{memberid}', '{ticketType.ToString().ToLower()}', False)",
+                        con);
+                await cmd.ExecuteNonQueryAsync();
+
+                ticket_channel = await interaction.Guild.CreateChannelAsync($"support-{ticket_number}", ChannelType.Text,
+                    Ticket_category, $"Ticket erstellt von {interaction.User.UsernameWithDiscriminator}");
+
+                await using NpgsqlCommand cmd2 =
+                    new(
+                        $"INSERT INTO ticketcache (ticket_id, ticket_owner, tchannel_id, claimed) VALUES ('{ticketid}', '{memberid}', '{ticket_channel.Id}', False)",
+                        con);
+                await cmd2.ExecuteNonQueryAsync();
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                await TicketManagerHelper.AddUserToTicket(interaction, ticket_channel, interaction.User);
+                await TicketManagerHelper.InsertHeaderIntoTicket(interaction, ticket_channel, TicketCreator.User,
+                    TicketType.Support);
+            }
+
+            var button = new DiscordLinkButtonComponent("https://discord.com/channels/" + guildid + "/" + ticket_channel.Id,
+                "Zum Ticket");
+            var teb = new DiscordEmbedBuilder
+            {
+                Title = "Ticket erstellt",
+                Description = $"Dein Ticket wurde erfolgreich erstellt! -> <#{ticket_channel.Id}>",
+                Color = DiscordColor.Green
+            };
+            // inset header later
+            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(teb)
+                .AddComponents(button));
+            await TicketManagerHelper.SendUserNotice(interaction, ticket_channel, ticketType);
         }
-        else if (ticketType == TicketType.Support)
-        {
-            var con = DatabaseService.GetConnection();
-            await using NpgsqlCommand cmd =
-                new(
-                    $"INSERT INTO ticketstore (ticket_id, ticket_owner, tickettype, closed) VALUES ('{ticketid}', '{memberid}', '{ticketType.ToString().ToLower()}', False)",
-                    con);
-            await cmd.ExecuteNonQueryAsync();
-
-            ticket_channel = await interaction.Guild.CreateChannelAsync($"support-{ticket_number}", ChannelType.Text,
-                Ticket_category, $"Ticket erstellt von {interaction.User.UsernameWithDiscriminator}");
-
-            await using NpgsqlCommand cmd2 =
-                new(
-                    $"INSERT INTO ticketcache (ticket_id, ticket_owner, tchannel_id, claimed) VALUES ('{ticketid}', '{memberid}', '{ticket_channel.Id}', False)",
-                    con);
-            await cmd2.ExecuteNonQueryAsync();
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            await TicketManagerHelper.AddUserToTicket(interaction, ticket_channel, interaction.User);
-            await TicketManagerHelper.InsertHeaderIntoTicket(interaction, ticket_channel, TicketCreator.User,
-                TicketType.Support);
-        }
-
-        var button = new DiscordLinkButtonComponent("https://discord.com/channels/" + guildid + "/" + ticket_channel.Id,
-            "Zum Ticket");
-        var teb = new DiscordEmbedBuilder
-        {
-            Title = "Ticket erstellt",
-            Description = $"Dein Ticket wurde erfolgreich erstellt! -> <#{ticket_channel.Id}>",
-            Color = DiscordColor.Green
-        };
-        // inset header later
-        await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(teb)
-            .AddComponents(button));
-        await TicketManagerHelper.SendUserNotice(interaction, ticket_channel, ticketType);
     }
 
     public static async Task CloseTicket(ComponentInteractionCreateEventArgs interaction, DiscordChannel ticket_channel)
