@@ -294,13 +294,11 @@ public class TicketManagerHelper
         string transcriptURL = await GenerateTranscript(interaction.Channel);
         await InsertTransscriptIntoDB(interaction.Channel, TranscriptType.Team, transcriptURL);
         await ms.ModifyAsync("Transcript wurde generiert....");
-        await ms.DeleteAsync();
 
         DiscordChannel channel = interaction.Channel;
         await channel.SendMessageAsync(mb);
         await Task.Delay(TimeSpan.FromSeconds(5));
-        var client = interaction.ServiceProvider.GetRequiredService<DiscordClient>();
-        await SendTranscriptToLog(channel, transcriptURL, interaction.Interaction, client);
+        await SendTranscriptToLog(channel, transcriptURL, interaction.Interaction);
         await channel.DeleteAsync("Ticket wurde gelöscht");
         await DeleteCache(channel);
     }
@@ -857,7 +855,7 @@ public class TicketManagerHelper
         }
     }
 
-    public static async Task SendTranscriptToLog(DiscordChannel channel, string ticket_url, DiscordInteraction interaction, DiscordClient client)
+    public static async Task SendTranscriptToLog(DiscordChannel channel, string ticket_url, DiscordInteraction interaction)
     {
         DiscordEmbedBuilder eb = new();
         var ticket_owner = await GetTicketOwnerFromChannel(channel);
@@ -889,7 +887,6 @@ public class TicketManagerHelper
 
         foreach (var user in userSet)
         {
-            if (user.Id == client.CurrentUser.Id) continue;
             cusers += $"{user.Mention} ``{user.Id}``\n";
         }
 
@@ -935,7 +932,6 @@ public class TicketManagerHelper
 
         foreach (var user in userSet)
         {
-            if (user.Id == client.CurrentUser.Id) continue;
             cusers += $"{user.Mention} ``{user.Id}``\n";
         }
 
