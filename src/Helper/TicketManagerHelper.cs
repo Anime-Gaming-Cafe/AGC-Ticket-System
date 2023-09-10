@@ -366,10 +366,8 @@ public class TicketManagerHelper
         var flagtranscript = new DiscordButtonComponent(ButtonStyle.Primary, "ticket_flagtranscript", "Transcript Flaggen");
         buttons.Add(flagtranscript);
         // render 
-        var imb = new DiscordMessageBuilder();
-        imb.WithContent("Mehr Optionen....");
-        imb.AddComponents(new DiscordActionRowComponent(buttons));
-        await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(imb).AsEphemeral());
+        var imb = new DiscordInteractionResponseBuilder().AddComponents(buttons).AsEphemeral();
+        await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, imb);
     }
 
     public static async Task<List<DiscordUser>> GetTicketUsers(DiscordInteraction interaction)
