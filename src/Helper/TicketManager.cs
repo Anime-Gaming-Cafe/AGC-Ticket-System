@@ -485,8 +485,11 @@ public class TicketManagerEventHandler : BaseCommandModule
             }
             else if (e.Interaction.Data.CustomId == "adduser_selector")
             {
-                Console.WriteLine("adduser_selector");
                 await TicketManagerHelper.AddUserToTicketSelector_Callback(e);
+            }
+            else if (e.Interaction.Data.CustomId == "removeuser_selector")
+            {
+                await TicketManagerHelper.RemoveUserFromTicketSelector_Callback(e);
             }
 
 
