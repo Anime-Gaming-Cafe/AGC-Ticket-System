@@ -9,10 +9,8 @@ using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using DisCatSharp.Interactivity.Extensions;
-using Microsoft.VisualBasic;
 using Npgsql;
 using System.Diagnostics;
-using System.Threading.Tasks.Dataflow;
 
 public class TicketManagerHelper
 {
@@ -264,7 +262,7 @@ public class TicketManagerHelper
 
     public static async Task DeleteTicket(ComponentInteractionCreateEventArgs interaction)
     {
-        
+
         var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
         if (!teamler)
         {
@@ -535,7 +533,7 @@ public class TicketManagerHelper
         {
             options.Add(new DiscordStringSelectComponentOption(user.UsernameWithDiscriminator + " ( " + user.Id.ToString() + " )", user.Id.ToString()));
         }
-        var selector = new DiscordStringSelectComponent("Wähle einen User", "Wähle einen User", options, maxOptions:1, minOptions: 1, customId: "userinfo_selector");
+        var selector = new DiscordStringSelectComponent("Wähle einen User", "Wähle einen User", options, maxOptions: 1, minOptions: 1, customId: "userinfo_selector");
         var irb = new DiscordInteractionResponseBuilder().WithContent("Wähle ein User aus dessen infos du sehen willst.").AddComponents(selector).AsEphemeral();
         // Update original
         await interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, irb);

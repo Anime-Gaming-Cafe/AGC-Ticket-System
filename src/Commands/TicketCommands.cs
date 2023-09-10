@@ -3,7 +3,6 @@ using AGC_Ticket_System.Helper;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
-using DisCatSharp.Enums;
 
 namespace AGC_Ticket_System.Commands;
 

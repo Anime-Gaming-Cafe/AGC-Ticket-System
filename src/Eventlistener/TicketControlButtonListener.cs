@@ -49,7 +49,7 @@ public class TicketManagerEventHandler : BaseCommandModule
             else if (e.Interaction.Data.CustomId == "ticket_userinfo")
             {
                 await TicketManagerHelper.UserInfo(e.Interaction);
-            }            
+            }
             else if (e.Interaction.Data.CustomId == "userinfo_selector")
             {
                 await TicketManagerHelper.UserInfo_Callback(e);
