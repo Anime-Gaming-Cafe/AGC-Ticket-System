@@ -42,6 +42,10 @@ public class TicketManagerEventHandler : BaseCommandModule
             {
                 await TicketManagerHelper.RemoveUserFromTicketSelector(e.Interaction);
             }
+            else if (e.Interaction.Data.CustomId == "ticket_more")
+            {
+                await TicketManagerHelper.RenderMore(e);
+            }
 
 
             return Task.CompletedTask;

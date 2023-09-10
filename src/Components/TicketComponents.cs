@@ -13,7 +13,7 @@ public class TicketComponents
             new DiscordButtonComponent(ButtonStyle.Primary, "ticket_claim", "(Team) Ticket Claimen 👋"),
             new DiscordButtonComponent(ButtonStyle.Secondary, "ticket_add_user", "(Team) User hinzufügen 👥"),
             new DiscordButtonComponent(ButtonStyle.Secondary, "ticket_remove_user", "(Team) User entfernen 👤"),
-            new DiscordButtonComponent(ButtonStyle.Success, "ticket_userinfo", "(Team) Nutzerinfos 📝")
+            new DiscordButtonComponent(ButtonStyle.Success, "ticket_more", "(Team) Mehr...")
         };
         return buttons;
     }
@@ -26,7 +26,7 @@ public class TicketComponents
             new DiscordButtonComponent(ButtonStyle.Primary, "ticket_claim", "(Team) Ticket Claimen 👋", true),
             new DiscordButtonComponent(ButtonStyle.Secondary, "ticket_add_user", "(Team) User hinzufügen 👥"),
             new DiscordButtonComponent(ButtonStyle.Secondary, "ticket_remove_user", "(Team) User entfernen 👤"),
-            new DiscordButtonComponent(ButtonStyle.Success, "ticket_userinfo", "(Team) Nutzerinfos 📝")
+            new DiscordButtonComponent(ButtonStyle.Success, "ticket_more", "(Team) Mehr...")
         };
         return buttons;
     }
@@ -39,7 +39,7 @@ public class TicketComponents
             new DiscordButtonComponent(ButtonStyle.Primary, "ticket_claim", "(Team) Ticket Claimen 👋", true),
             new DiscordButtonComponent(ButtonStyle.Secondary, "ticket_add_user", "(Team) User hinzufügen 👥", true),
             new DiscordButtonComponent(ButtonStyle.Secondary, "ticket_remove_user", "(Team) User entfernen 👤", true),
-            new DiscordButtonComponent(ButtonStyle.Success, "ticket_userinfo", "(Team) Nutzerinfos 📝", true)
+            new DiscordButtonComponent(ButtonStyle.Success, "ticket_more", "(Team) Mehr...")
         };
         return buttons;
     }
@@ -51,7 +51,7 @@ public class TicketComponents
             new DiscordButtonComponent(ButtonStyle.Danger, "ticket_close", "(Team) Ticket schließen ❌"),
             new DiscordButtonComponent(ButtonStyle.Secondary, "ticket_add_user", "(Team) User hinzufügen 👥"),
             new DiscordButtonComponent(ButtonStyle.Secondary, "ticket_remove_user", "(Team) User entfernen 👤"),
-            new DiscordButtonComponent(ButtonStyle.Success, "ticket_userinfo", "(Team) Nutzerinfos 📝")
+            new DiscordButtonComponent(ButtonStyle.Success, "ticket_more", "(Team) Mehr...")
         };
         return buttons;
     }
