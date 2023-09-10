@@ -32,7 +32,7 @@ public class TicketCommands : BaseCommandModule
             return;
         }
         await msg.ModifyAsync(eb1);
-        await TicketManagerHelper.SendTranscriptToLog(ctx, s);
+        await TicketManagerHelper.SendTranscriptToLog(ctx, s, ctx.Client);
     }
 
     [Command("contact")]

@@ -11,6 +11,7 @@ using DisCatSharp.EventArgs;
 using DisCatSharp.Interactivity.Extensions;
 using Npgsql;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 public class TicketManagerHelper
 {
@@ -298,7 +299,8 @@ public class TicketManagerHelper
         DiscordChannel channel = interaction.Channel;
         await channel.SendMessageAsync(mb);
         await Task.Delay(TimeSpan.FromSeconds(5));
-        await SendTranscriptToLog(channel, transcriptURL, interaction.Interaction);
+        var client = interaction.ServiceProvider.GetRequiredService<DiscordClient>();
+        await SendTranscriptToLog(channel, transcriptURL, interaction.Interaction, client);
         await channel.DeleteAsync("Ticket wurde gelöscht");
         await DeleteCache(channel);
     }
@@ -855,7 +857,7 @@ public class TicketManagerHelper
         }
     }
 
-    public static async Task SendTranscriptToLog(DiscordChannel channel, string ticket_url, DiscordInteraction interaction)
+    public static async Task SendTranscriptToLog(DiscordChannel channel, string ticket_url, DiscordInteraction interaction, DiscordClient client)
     {
         DiscordEmbedBuilder eb = new();
         var ticket_owner = await GetTicketOwnerFromChannel(channel);
@@ -887,6 +889,7 @@ public class TicketManagerHelper
 
         foreach (var user in userSet)
         {
+            if (user.Id == client.CurrentUser.Id) continue;
             cusers += $"{user.Mention} ``{user.Id}``\n";
         }
 
@@ -901,7 +904,7 @@ public class TicketManagerHelper
         await logchannel.SendMessageAsync(eb);
     }
 
-    public static async Task SendTranscriptToLog(CommandContext ctx, string ticket_url)
+    public static async Task SendTranscriptToLog(CommandContext ctx, string ticket_url, DiscordClient client)
     {
         DiscordEmbedBuilder eb = new();
         var ticket_owner = await GetTicketOwnerFromChannel(ctx.Channel);
@@ -932,6 +935,7 @@ public class TicketManagerHelper
 
         foreach (var user in userSet)
         {
+            if (user.Id == client.CurrentUser.Id) continue;
             cusers += $"{user.Mention} ``{user.Id}``\n";
         }
 
