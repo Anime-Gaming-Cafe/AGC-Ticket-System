@@ -257,8 +257,11 @@ public class TicketManagerHelper
             .WithFooter("AGC-Support-System").Build();
         var mb = new DiscordMessageBuilder();
         mb.WithEmbed(ebct);
+        var ms = await interaction.Channel.SendMessageAsync("Transcript wird generiert...");
         string transcriptURL = await GenerateTranscript(interaction.Channel);
         await InsertTransscriptIntoDB(interaction.Channel, TranscriptType.Team, transcriptURL);
+        await ms.ModifyAsync("Transcript wurde generiert....");
+        await ms.DeleteAsync();
 
         DiscordChannel channel = interaction.Channel;
         await channel.SendMessageAsync(mb);
