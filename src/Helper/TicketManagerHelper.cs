@@ -3,12 +3,15 @@ using AGC_Ticket.Helpers;
 using AGC_Ticket.Services.DatabaseHandler;
 using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Enums;
+using DisCatSharp;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
+using DisCatSharp.Interactivity.Extensions;
 using Npgsql;
 using System.Diagnostics;
+using System.Threading.Tasks.Dataflow;
 
 public class TicketManagerHelper
 {
@@ -346,6 +349,54 @@ public class TicketManagerHelper
         var usersel = new DiscordUserSelectComponent("Wähle einen User", "transcript_user_selector", 1, 1);
 
         var irb = new DiscordInteractionResponseBuilder().AddEmbed(eb).AddComponents(usersel).AsEphemeral();
+        await interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, irb);
+    }
+
+    public static async Task TranscriptFlag_Callback(DiscordInteraction interaction, DiscordClient client)
+    {
+        var users = interaction.Data.Values[0];
+        var user = await interaction.Guild.GetMemberAsync(ulong.Parse(users));
+        var channel = interaction.Channel;
+
+        var idstring = $"FlagModal-{GenerateTicketID(3)}";
+        DiscordInteractionModalBuilder modal = new();
+        modal.WithTitle("Weitere Notizen zum Flag");
+        modal.CustomId = idstring;
+        modal.AddTextComponent(new DiscordTextComponent(TextComponentStyle.Small, label: "Notiz:"));
+        await interaction.CreateInteractionModalResponseAsync(modal);
+        var interactivity = client.GetInteractivity();
+        var result = await interactivity.WaitForModalAsync(idstring, TimeSpan.FromMinutes(5));
+        if (result.TimedOut)
+        {
+            return;
+        }
+        var notes = result.Result.Interaction.Data.Components[0].Value;
+        await result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+
+        var ticket_id = await GetTicketIdFromChannel(channel);
+        var ticket_owner = await GetTicketOwnerFromChannel(channel);
+        await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"Transcript wird generiert..."));
+        var transcriptURL = await GenerateTranscript(channel);
+        await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"Transcript wird in die Datenbank eingetragen..."));
+        var con_db = BotConfig.GetConfig()["DatabaseCfg"]["MainBotDatabase"];
+        var con_host = BotConfig.GetConfig()["DatabaseCfg"]["Database_Host"];
+        var con_pass = BotConfig.GetConfig()["DatabaseCfg"]["Database_Password"];
+        var con_user = BotConfig.GetConfig()["DatabaseCfg"]["Database_User"];
+        var currentappid = client.CurrentApplication.Id;
+        string caseid = Guid.NewGuid().ToString("N").Substring(0, 8);
+        var constring = $"Host={con_host};Username={con_user};Password={con_pass};Database={con_db}";
+        var current_unix_timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+        await using var con = new NpgsqlConnection(constring);
+        await con.OpenAsync();
+        var cmd = new NpgsqlCommand("INSERT INTO flags (description, userid, punisherid, datum, caseid) VALUES (@description, @userid, @punisherid, @datum, @caseid)", con);
+        cmd.Parameters.AddWithValue("@description", $"Angehängtes Transcript aus {ticket_id} (Von User: {ticket_owner} -> {transcriptURL}  |  Dazugehörige Notiz: {notes}");
+        cmd.Parameters.AddWithValue("@userid", (long)user.Id);
+        cmd.Parameters.AddWithValue("@punisherid", (long)interaction.User.Id);
+        cmd.Parameters.AddWithValue("@datum", current_unix_timestamp);
+        cmd.Parameters.AddWithValue("@caseid", caseid);
+        await cmd.ExecuteNonQueryAsync();
+        await con.CloseAsync();
+        await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"Transcript wurde in die Datenbank eingetragen bei {user.UsernameWithDiscriminator} ``{user.Id}`` eingetragen!"));
     }
 
     public static async Task RenderMore(InteractionCreateEventArgs interactionCreateEvent)
@@ -369,6 +420,51 @@ public class TicketManagerHelper
         var imb = new DiscordInteractionResponseBuilder().AddComponents(buttons).AsEphemeral();
         await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, imb);
     }
+
+    public static async Task UserInfo(DiscordInteraction interaction)
+    {
+        var users = await GetTicketUsers(interaction);
+        // generate stringselector
+        var options = new List<DiscordStringSelectComponentOption>();
+        foreach (var user in users)
+        {
+            options.Add(new DiscordStringSelectComponentOption(user.UsernameWithDiscriminator + " ( " + user.Id.ToString() + " )", user.Id.ToString()));
+        }
+        var selector = new DiscordStringSelectComponent("Wähle einen User", "Wähle einen User", options, maxOptions:1, minOptions: 1, customId: "userinfo_selector");
+        var irb = new DiscordInteractionResponseBuilder().WithContent("Wähle ein User aus dessen infos du sehen willst.").AddComponents(selector).AsEphemeral();
+        // Update original
+        await interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, irb);
+
+    }
+    public static async Task UserInfo_Callback(ComponentInteractionCreateEventArgs args)
+    {
+        // get user
+        var user = args.Interaction.Data.Values[0];
+        var member = await args.Guild.GetMemberAsync(ulong.Parse(user));
+        // gather infos
+        var joined_at = member.JoinedAt.Timestamp();
+        var created_at = member.CreationTimestamp.Timestamp();
+        var toprole_color = member.Color;
+        var toprole = member.Roles?.FirstOrDefault();
+        var rolemention = toprole?.Mention ?? "Keine Rolle";
+        // get prev ticketcount
+        var prev_tickets = await GetTicketCountFromThisUser((long)member.Id) - 1;
+        Console.WriteLine(12);
+        // generate embed
+        var eb = new DiscordEmbedBuilder()
+            .WithTitle("Userinfo")
+            .WithDescription($"Userinfo für {member.Mention} ``{member.Id}``")
+            .WithColor(toprole_color)
+            .AddField(new DiscordEmbedField("Beigetreten am", joined_at, false)
+            ).AddField(new DiscordEmbedField("Erstellt am", created_at, false)
+            ).AddField(new DiscordEmbedField("Höchste Rolle", toprole != null ? toprole.Mention : "Keine Rolle", false)
+            ).AddField(new DiscordEmbedField("Ticketcount", prev_tickets.ToString())).WithFooter("AGC-Support-System")
+            .WithThumbnail(member.AvatarUrl)
+            .WithImageUrl(member.BannerUrl);
+        var irb = new DiscordInteractionResponseBuilder().AddEmbed(eb).AsEphemeral();
+        await args.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, irb);
+    }
+
 
     public static async Task<List<DiscordUser>> GetTicketUsers(DiscordInteraction interaction)
     {
