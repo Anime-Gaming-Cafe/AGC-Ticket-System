@@ -259,6 +259,14 @@ public class TicketManagerHelper
             ticket_id = reader.GetString(0);
         }
 
+        var claimembed = new DiscordEmbedBuilder
+        {
+            Title = "Ticket geclaimed",
+            Description = $"Das Ticket wurde von {interaction.User.Mention} ``{interaction.User.Id}`` geclaimed!",
+            Color = DiscordColor.Green
+        };
+        claimembed.WithFooter($"{interaction.User.UsernameWithDiscriminator} wird sich um dein Anliegen kümmern | {ticket_id}");
+
         await reader.CloseAsync();
         await using NpgsqlCommand cmd2 = new($"UPDATE ticketcache SET claimed = True WHERE ticket_id = '{ticket_id}'",
             con);
