@@ -181,7 +181,6 @@ public class TicketManagerHelper
     {
         if (ticketType == TicketType.Report)
         {
-            ;
             int prev_tickets = await GetTicketCountFromThisUser((long)interaction.User.Id);
             var eb = new DiscordEmbedBuilder()
                 .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl)
