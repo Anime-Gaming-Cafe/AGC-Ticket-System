@@ -175,22 +175,56 @@ public class TicketManagerHelper
             }
         }
     }
+    private static string GenerateAddionalNotes()
+    {
+        string additionalNotes = "";
+        // check if its between 23 pm and 8 am
+
+        var currentHour = DateTime.Now.Hour;
+        if (currentHour >= 22 || currentHour <= 8)
+        {
+            additionalNotes = "\n\nAufgrund der Uhrzeit kann es zu Verzögerungen kommen";
+        }
+        // check if its christmas
+        if (DateTime.Now.Month == 12)
+        {
+            additionalNotes = "\n\nAufgrund der Weihnachtszeit kann es zu Verzögerungen kommen.";
+        }
+
+
+        if (additionalNotes != "")
+        {
+            additionalNotes = "NOTE: " + additionalNotes;
+        }
+
+        if (additionalNotes != "")
+        {
+            additionalNotes = additionalNotes + " Danke für deine Geduld";
+        }
+
+        return additionalNotes;
+    }
 
     public static async Task SendUserNotice(DiscordInteraction interaction, DiscordChannel ticket_channel,
         TicketType ticketType)
     {
         if (ticketType == TicketType.Report)
         {
-            int prev_tickets = await GetTicketCountFromThisUser((long)interaction.User.Id);
             var eb = new DiscordEmbedBuilder()
                 .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl)
                 .WithColor(DiscordColor.Blurple).WithFooter("AGC-Support-System")
                 .WithDescription(
                     $"Hey! Danke fürs öffnen eines Report-Tickets. Ein Teammitglied wird sich gleich um dein Anliegen kümmern. Bitte teile uns in der Zeit alle nötigen Infos mit.\n" +
                     $"1. Um wen geht es (User-ID oder User-Name)\n" +
-                    $"2. Was ist vorgefallen (Bitte versuche die Situation so ausführlich wie möglich zu beschreiben)" +
-                    $"");
+                    $"2. Was ist vorgefallen (Bitte versuche die Situation so ausführlich wie möglich zu beschreiben) {GenerateAddionalNotes()}");
             await ticket_channel.SendMessageAsync(eb);
+        }
+        else if (ticketType == TicketType.Support)
+        {
+            var eb = new DiscordEmbedBuilder()
+                .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl)
+                .WithColor(DiscordColor.Blurple).WithFooter("AGC-Support-System")
+                .WithDescription($"Hey! Danke fürs öffnen eines Support-Tickets. Ein Teammitglied wird sich gleich um dein Anliegen kümmern. Bitte teile uns in der Zeit alle nötigen Infos mit. {GenerateAddionalNotes()}");
         }
     }
 
