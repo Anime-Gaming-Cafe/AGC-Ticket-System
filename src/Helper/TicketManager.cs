@@ -341,7 +341,7 @@ public class TicketManagerHelper
             };
             await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(afteraddembed));
 
-            // TODO: Send transcript to user
+            var tr = await TicketManager.GenerateTranscript(interaction.Channel);
 
             var userembed = new DiscordEmbedBuilder
             {
@@ -431,7 +431,23 @@ public class TicketManagerHelper
 
     public static async Task RemoveUserFromTicketSelector_Callback(ComponentInteractionCreateEventArgs interaction)
     {
-
+        var values = interaction.Interaction.Data.Values;
+        var user = values[0];
+        var member = await interaction.Guild.GetMemberAsync(ulong.Parse(user));
+        var ticket_channel = interaction.Channel;
+        if (!await CheckIfUserIsInTicket(interaction.Interaction, ticket_channel, member))
+        {
+            var alreadyinembed = new DiscordEmbedBuilder
+            {
+                Title = "User nicht im Ticket",
+                Description = $"Der User {member.Mention} ``{member.Id}`` ist nicht im Ticket!",
+                Color = DiscordColor.Red
+            };
+            await interaction.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                                              new DiscordInteractionResponseBuilder().AddEmbed(alreadyinembed).AsEphemeral());
+            return;
+        }
+        await RemoveUserFromTicket(interaction.Interaction, ticket_channel, member, true);
     }
 }
 
