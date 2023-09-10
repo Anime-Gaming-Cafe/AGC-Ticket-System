@@ -64,7 +64,7 @@ public class SupportPanelListener : SupportPanel
                 }
 
                 DiscordEmbed embed = new DiscordEmbedBuilder()
-                    .WithTitle("Wähle eine Supportkategorie aus")
+                    .WithTitle("Wähle eine Supportkategorie aus").WithFooter("Wähle bitte die korrekte zu deinem Anliegen zutreffende Kategorie aus!")
                     .WithDescription(
                         "Wähle unten eine Supportkategorie aus. Dies hilft uns dein Ticket schneller zuzuordnen." +
                         "Nach Auswahl der Kategorie wird ein Ticket erstellt, bitte schlildere anschließend im Ticket dein Anliegen.\n\n" +

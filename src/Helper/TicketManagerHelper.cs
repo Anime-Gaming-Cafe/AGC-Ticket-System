@@ -194,7 +194,7 @@ public class TicketManagerHelper
 
     public static async Task DeleteTicket(ComponentInteractionCreateEventArgs interaction)
     {
-        await interaction.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+        
         var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
         if (!teamler)
         {
@@ -202,10 +202,17 @@ public class TicketManagerHelper
                 new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
             return;
         }
+        await interaction.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
 
 
         var del_ticketbutton =
             new DiscordButtonComponent(ButtonStyle.Danger, "ticket_delete", "Ticket löschen ❌", true);
+        var imsg = await interaction.Channel.GetMessageAsync(interaction.Message.Id);
+        var imsgmb = new DiscordMessageBuilder();
+        imsgmb.WithContent(imsg.Content);
+        imsgmb.WithEmbed(imsg.Embeds[0]);
+        imsgmb.AddComponents(del_ticketbutton);
+        await imsg.ModifyAsync(imsgmb);
         DiscordEmbed ebct = new DiscordEmbedBuilder()
             .WithTitle("Ticket wird gelöscht")
             .WithDescription(
@@ -215,21 +222,12 @@ public class TicketManagerHelper
         var mb = new DiscordMessageBuilder();
         mb.WithEmbed(ebct);
         string transcriptURL = await GenerateTranscript(interaction.Channel);
-        await InsertTransscriptIntoDB(interaction.Channel, TranscriptType.User, transcriptURL);
-
-        // get imsg
-        var imsg = await interaction.Channel.GetMessageAsync(interaction.Message.Id);
-        var imsgmb = new DiscordMessageBuilder();
-        imsgmb.WithContent(imsg.Content);
-        imsgmb.WithEmbed(imsg.Embeds[0]);
-        imsgmb.AddComponents(del_ticketbutton);
-        await imsg.ModifyAsync(imsgmb);
-
+        await InsertTransscriptIntoDB(interaction.Channel, TranscriptType.Team, transcriptURL);
 
         DiscordChannel channel = interaction.Channel;
         await channel.SendMessageAsync(mb);
         await Task.Delay(TimeSpan.FromSeconds(5));
-        await SendTranscriptToLog(channel, transcriptURL);
+        await SendTranscriptToLog(channel, transcriptURL, interaction.Interaction);
         await channel.DeleteAsync("Ticket wurde gelöscht");
         await DeleteCache(channel);
     }
@@ -282,6 +280,17 @@ public class TicketManagerHelper
     public static async Task AddUserToTicket(DiscordInteraction interaction, DiscordChannel ticket_channel,
         DiscordUser user, bool addedAfter = false)
     {
+        var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
+        if (!teamler && addedAfter)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
+            return;
+        }
+        if (addedAfter)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+        }
         var con = DatabaseService.GetConnection();
         string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ticket_channel.Id}'";
         await using NpgsqlCommand cmd = new(query, con);
@@ -316,9 +325,18 @@ public class TicketManagerHelper
         }
     }
 
+
     public static async Task RemoveUserFromTicket(DiscordInteraction interaction, DiscordChannel ticket_channel,
         DiscordUser user, bool noautomatic = false)
     {
+        var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
+        if (!teamler)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
+            return;
+        }
+        await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
         var con = DatabaseService.GetConnection();
         string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ticket_channel.Id}'";
         await using NpgsqlCommand cmd = new(query, con);
@@ -344,9 +362,9 @@ public class TicketManagerHelper
             {
                 Title = "User entfernt",
                 Description = $"Der User {user.Mention} ``{member.Id}`` wurde vom Ticket entfernt!",
-                Color = DiscordColor.Green
+                Color = DiscordColor.Red
             };
-            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(afteraddembed));
+            await interaction.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(afteraddembed));
 
             var tr = await GenerateTranscript(interaction.Channel);
 
@@ -385,6 +403,13 @@ public class TicketManagerHelper
 
     public static async Task AddUserToTicketSelector(DiscordInteraction interaction)
     {
+        var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
+        if (!teamler)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
+            return;
+        }
         DiscordEmbedBuilder eb = new()
         {
             Title = "User hinzufügen",
@@ -402,6 +427,13 @@ public class TicketManagerHelper
 
     public static async Task RemoveUserFromTicketSelector(DiscordInteraction interaction)
     {
+        var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
+        if (!teamler)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
+            return;
+        }
         DiscordEmbedBuilder eb = new()
         {
             Title = "User entfernen",
@@ -554,10 +586,11 @@ public class TicketManagerHelper
         }
     }
 
-    public static async Task SendTranscriptToLog(DiscordChannel channel, string ticket_url)
+    public static async Task SendTranscriptToLog(DiscordChannel channel, string ticket_url, DiscordInteraction interaction)
     {
         DiscordEmbedBuilder eb = new();
         var ticket_owner = await GetTicketOwnerFromChannel(channel);
+        var staff = interaction.User.Mention;
 
         eb.AddField(new DiscordEmbedField("Ticket Owner", $"<@{ticket_owner}>", true));
         eb.AddField(new DiscordEmbedField("Ticket Name", channel.Name, true));
@@ -591,7 +624,7 @@ public class TicketManagerHelper
         eb.AddField(new DiscordEmbedField("Nutzer im Ticket", cusers, true));
         eb.AddField(new DiscordEmbedField("Ticket URL", $"[Transcript Link]({ticket_url})", true));
         eb.AddField(new DiscordEmbedField("Ticket ID", await GetTicketIdFromChannel(channel), true));
-
+        eb.AddField(new DiscordEmbedField("Staff", staff, true));
         eb.WithColor(DiscordColor.Blurple);
         eb.WithFooter($"User-ID = {ticket_owner}");
         eb.WithTimestamp(DateTime.Now);
@@ -636,6 +669,7 @@ public class TicketManagerHelper
         eb.AddField(new DiscordEmbedField("Nutzer im Ticket", cusers, true));
         eb.AddField(new DiscordEmbedField("Ticket URL", $"[Transcript Link]({ticket_url})", true));
         eb.AddField(new DiscordEmbedField("Ticket ID", await GetTicketIdFromChannel(ctx.Channel), true));
+        eb.AddField(new DiscordEmbedField("Staff", ctx.Message.Author.Mention, true));
         eb.WithColor(DiscordColor.Blurple);
         eb.WithFooter($"User-ID = {ticket_owner}");
         eb.WithTimestamp(DateTime.Now);

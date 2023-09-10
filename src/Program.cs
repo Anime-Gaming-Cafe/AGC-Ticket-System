@@ -132,7 +132,7 @@ internal class Program : BaseCommandModule
                 closedTickets = Convert.ToInt32(cmd1.ExecuteScalar());
 
                 await client.UpdateStatusAsync(new DiscordActivity(name: $"Tickets: Offen: {openTickets} | Gesamt: {openTickets + closedTickets}", type: ActivityType.Custom));
-                await Task.Delay(TimeSpan.FromMinutes(2));
+                await Task.Delay(TimeSpan.FromMinutes(1));
             }
         }
     }
