@@ -4,19 +4,12 @@ using AGC_Ticket.Services.DatabaseHandler;
 using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Enums;
 using DisCatSharp;
-using DisCatSharp.CommandsNext;
-using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using Npgsql;
-using System.Data;
-using System.Diagnostics;
 
 namespace AGC_Ticket_System.Helper;
-
-
-
 
 public class TicketManager
 {
@@ -124,6 +117,7 @@ public class TicketManager
                 new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
             return;
         }
+
         await interaction.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
         var message = await ticket_channel.GetMessageAsync(interaction.Message.Id);
         var umb = new DiscordMessageBuilder();
@@ -151,7 +145,7 @@ public class TicketManager
         };
         var msg = await interaction.Channel.SendMessageAsync(eb1.Build());
 
-        eb1 = new DiscordEmbedBuilder()
+        eb1 = new DiscordEmbedBuilder
         {
             Description = "Transcript wurde gespeichert",
             Color = DiscordColor.Green
@@ -161,7 +155,6 @@ public class TicketManager
         await TicketManagerHelper.InsertTransscriptIntoDB(ticket_channel, TranscriptType.User, transcriptURL);
 
         await msg.ModifyAsync(eb1.Build());
-
 
 
         var con = DatabaseService.GetConnection();
@@ -224,6 +217,4 @@ public class TicketManager
             }
         }
     }
-
 }
-

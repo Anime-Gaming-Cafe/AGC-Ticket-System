@@ -1,11 +1,10 @@
-﻿using AGC_Ticket_System.Helper;
-using DisCatSharp.CommandsNext;
+﻿using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
 
 namespace AGC_Ticket_System.Commands;
 
-public class TicketCommands :BaseCommandModule
+public class TicketCommands : BaseCommandModule
 {
     [Command("transcript")]
     [RequireStaffRole]
