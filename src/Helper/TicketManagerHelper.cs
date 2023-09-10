@@ -11,7 +11,6 @@ using DisCatSharp.EventArgs;
 using DisCatSharp.Interactivity.Extensions;
 using Npgsql;
 using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 
 public class TicketManagerHelper
 {
