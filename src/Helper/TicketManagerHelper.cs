@@ -256,7 +256,7 @@ public class TicketManagerHelper
             var eb = new DiscordEmbedBuilder()
                 .WithAuthor(interaction.User.UsernameWithDiscriminator, interaction.User.AvatarUrl)
                 .WithColor(DiscordColor.Blurple).WithFooter("AGC-Support-System")
-                .WithDescription($"Hey! Danke fürs öffnen eines Support-Tickets. Ein Teammitglied wird sich gleich um dein Anliegen kümmern. Bitte teile uns in der Zeit alle nötigen Infos mit. {GenerateAddionalNotes()}");
+                .WithDescription($"Hey! Danke fürs öffnen eines Support-Tickets. Ein Teammitglied wird sich gleich um dein Anliegen kümmern. Bitte teile uns in der Zeit alle nötigen Infos mit. {GenerateAdditionalNotes()}");
         }
     }
 
