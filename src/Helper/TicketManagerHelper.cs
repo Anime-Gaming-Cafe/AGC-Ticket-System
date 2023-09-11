@@ -205,18 +205,18 @@ public class TicketManagerHelper
         var currentHour = DateTime.Now.Hour;
         if (currentHour >= 22 || currentHour <= 8)
         {
-            additionalNotes = "\n\nAufgrund der Uhrzeit kann es zu Verzögerungen kommen";
+            additionalNotes = "\nAufgrund der Uhrzeit kann es zu Verzögerungen kommen";
         }
         // check if its christmas
         if (DateTime.Now.Month == 12)
         {
-            additionalNotes = "\n\nAufgrund der Weihnachtszeit kann es zu Verzögerungen kommen.";
+            additionalNotes = "\nAufgrund der Weihnachtszeit kann es zu Verzögerungen kommen.";
         }
 
 
         if (additionalNotes != "")
         {
-            additionalNotes = "NOTE: " + additionalNotes;
+            additionalNotes = "\nNOTE: " + additionalNotes;
         }
 
         if (additionalNotes != "")
