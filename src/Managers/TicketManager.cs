@@ -8,9 +8,7 @@ using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
-using Microsoft.VisualBasic;
 using Npgsql;
-using System.Threading.Tasks.Dataflow;
 
 namespace AGC_Ticket_System.Managers;
 

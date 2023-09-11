@@ -77,7 +77,7 @@ public class TicketManagerHelper
         bool isTicketOpen = false;
         var con = DatabaseService.GetConnection();
         string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ch.Id}'";
-        await using NpgsqlCommand cmd = new(query , con);
+        await using NpgsqlCommand cmd = new(query, con);
         await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
         while (reader.Read())
         {
