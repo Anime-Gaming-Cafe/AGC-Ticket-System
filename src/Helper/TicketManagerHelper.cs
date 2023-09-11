@@ -197,35 +197,35 @@ public class TicketManagerHelper
             }
         }
     }
-    private static string GenerateAddionalNotes()
+    private static string GenerateAdditionalNotes()
     {
-        string additionalNotes = "";
-        // check if its between 23 pm and 8 am
+        List<string> notes = new();
 
-        var currentHour = DateTime.Now.Hour;
+        // Check if it's between 10 pm and 8 am
+        int currentHour = DateTime.Now.Hour;
         if (currentHour >= 22 || currentHour <= 8)
         {
-            additionalNotes = "\nAufgrund der Uhrzeit kann es zu Verzögerungen kommen";
+            notes.Add("Aufgrund der Uhrzeit kann es zu Verzögerungen kommen");
         }
-        // check if its christmas
+
+        // Check if it's Christmas
         if (DateTime.Now.Month == 12)
         {
-            additionalNotes = "\nAufgrund der Weihnachtszeit kann es zu Verzögerungen kommen.";
+            notes.Add("Aufgrund der Weihnachtszeit kann es zu Verzögerungen kommen.");
         }
 
+        // Combine the notes
+        string additionalNotes = string.Join("\n", notes);
 
-        if (additionalNotes != "")
+        // Add a general note
+        if (!string.IsNullOrEmpty(additionalNotes))
         {
-            additionalNotes = "\nNOTE: " + additionalNotes;
-        }
-
-        if (additionalNotes != "")
-        {
-            additionalNotes = additionalNotes + " Danke für deine Geduld";
+            additionalNotes = $"NOTE: {additionalNotes} Danke für deine Geduld";
         }
 
         return additionalNotes;
     }
+
 
     public static async Task SendStaffNotice(CommandContext ctx, DiscordChannel ticket_channel, DiscordMember user)
     {
