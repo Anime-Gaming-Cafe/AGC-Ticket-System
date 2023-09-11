@@ -12,7 +12,7 @@ using Microsoft.VisualBasic;
 using Npgsql;
 using System.Threading.Tasks.Dataflow;
 
-namespace AGC_Ticket_System.Helper;
+namespace AGC_Ticket_System.Managers;
 
 public class TicketManager
 {
