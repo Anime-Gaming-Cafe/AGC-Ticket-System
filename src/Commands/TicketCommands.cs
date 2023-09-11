@@ -49,5 +49,14 @@ public class TicketCommands : BaseCommandModule
         await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":envelope:"));
     }
 
+    [Command("close")]
+    [RequireGuild]
+    [RequireStaffRole]
+    [RequireOpenTicket]
+    public async Task CloseTicket(CommandContext ctx)
+    {
+        await TicketManager.CloseTicket(ctx, ctx.Channel);
+    }
+
 
 }

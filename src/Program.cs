@@ -150,6 +150,10 @@ internal class Program : BaseCommandModule
         // check if error is DisCatSharp.CommandsNext.Exceptions.CommandNotFoundException
         if (e.Exception is CommandNotFoundException)
             return Task.CompletedTask;
+        if (e.Exception is ChecksFailedException)
+        {
+            return Task.CompletedTask;
+        }
         cn.Client.Logger.LogError($"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}");
         cn.Client.Logger.LogError($"Exception occured: {e.Exception.GetType()}: {e.Exception.StackTrace}");
 

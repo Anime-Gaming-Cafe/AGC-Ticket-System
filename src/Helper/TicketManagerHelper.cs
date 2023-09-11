@@ -71,6 +71,29 @@ public class TicketManagerHelper
         return isTicketOpen;
     }
 
+    public static async Task<bool> IsOpenTicket(DiscordChannel ch)
+    {
+        string ticket_id = string.Empty;
+        bool isTicketOpen = false;
+        var con = DatabaseService.GetConnection();
+        string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ch.Id}'";
+        await using NpgsqlCommand cmd = new(query , con);
+        await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
+        while (reader.Read())
+        {
+            ticket_id = reader.GetString(0);
+        }
+        await reader.CloseAsync();
+        string query2 = $"SELECT COUNT(*) FROM ticketstore WHERE ticket_id = '{ticket_id}' AND closed = false";
+        await using NpgsqlCommand cmd2 = new(query2, con);
+        int rowCount = Convert.ToInt32(cmd2.ExecuteScalar());
+        if (rowCount > 0)
+        {
+            isTicketOpen = true;
+        }
+        return isTicketOpen;
+    }
+
     public static async Task<long> GetOpenTicketChannel(long user_id)
     {
         long channel_id = 0;
@@ -82,7 +105,7 @@ public class TicketManagerHelper
         {
             channel_id = reader.GetInt64(0);
         }
-
+        await reader.CloseAsync();
         return channel_id;
     }
 
@@ -589,6 +612,49 @@ public class TicketManagerHelper
             ticket_users_discord.Add(u);
         }
         return ticket_users_discord;
+    }
+
+    public static async Task RemoveUserFromTicket(CommandContext ctx, DiscordChannel ticket_channel,
+    DiscordUser user, bool noautomatic = false)
+    {
+        var con = DatabaseService.GetConnection();
+        string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ticket_channel.Id}'";
+        await using NpgsqlCommand cmd = new(query, con);
+        await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
+        string ticket_id = "";
+        while (reader.Read())
+        {
+            ticket_id = reader.GetString(0);
+        }
+
+        await reader.CloseAsync();
+        await using NpgsqlCommand cmd2 =
+            new(
+                $"UPDATE ticketcache SET ticket_users = array_remove(ticket_users, '{(long)user.Id}') WHERE ticket_id = '{ticket_id}'",
+                con);
+        await cmd2.ExecuteNonQueryAsync();
+        var channel = ticket_channel;
+        var member = await ctx.Guild.GetMemberAsync(user.Id);
+        await channel.AddOverwriteAsync(member);
+        if (noautomatic)
+        {
+            var afteraddembed = new DiscordEmbedBuilder
+            {
+                Title = "User entfernt",
+                Description = $"Der User {user.Mention} ``{member.Id}`` wurde vom Ticket entfernt!",
+                Color = DiscordColor.Red
+            };
+            await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(afteraddembed));
+
+            var tr = await GenerateTranscript(ctx.Channel);
+
+            var userembed = new DiscordEmbedBuilder
+            {
+                Title = ticket_channel.Name,
+                Description = $"Du wurdest aus dem Ticket ``{ticket_channel.Name}`` entfernt!",
+                Color = DiscordColor.Green
+            };
+        }
     }
 
     public static async Task RemoveUserFromTicket(DiscordInteraction interaction, DiscordChannel ticket_channel,
