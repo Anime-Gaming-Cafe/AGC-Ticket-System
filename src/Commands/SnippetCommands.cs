@@ -1,14 +1,11 @@
 ﻿using AGC_Ticket.Services.DatabaseHandler;
-using AGC_Ticket_System.Helper;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
+using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using Npgsql;
-using System.ComponentModel.DataAnnotations.Schema;
-using DisCatSharp.Entities;
-using System.Reflection.PortableExecutable;
-using System.Text.RegularExpressions;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AGC_Ticket_System.Commands;
 
@@ -90,7 +87,7 @@ public class SnippetCommands : BaseCommandModule
             .WithColor(DiscordColor.Gold);
 
         bool snippetFound = false;
-        StringBuilder sb = new StringBuilder(); 
+        StringBuilder sb = new StringBuilder();
 
         while (await reader.ReadAsync())
         {
@@ -153,7 +150,7 @@ public class SnippetCommands : BaseCommandModule
             .WithColor(DiscordColor.Gold)
             .WithFooter("AGC Support-System", ctx.Guild.IconUrl);
 
-        bool snippetFound = false; 
+        bool snippetFound = false;
 
         foreach (var word in words)
         {
