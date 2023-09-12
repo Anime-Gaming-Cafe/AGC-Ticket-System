@@ -14,7 +14,7 @@ public class SnippetManager
 }
 
 [EventHandler]
-public class SnippetManagerListener
+public class SnippetListener
 {
     private readonly long catid = long.Parse(BotConfig.GetConfig()["SupportConfig"]["SupportCategoryId"]);
     private readonly long teamroleid = long.Parse(BotConfig.GetConfig()["SupportConfig"]["TeamRoleId"]);
