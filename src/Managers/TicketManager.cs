@@ -24,7 +24,7 @@ public class TicketManager
         {
             long tchannelId = await TicketManagerHelper.GetOpenTicketChannel(memberid);
             var tbutton = new DiscordLinkButtonComponent("https://discord.com/channels/" + guildid + "/" + tchannelId,
-                                   "Zum Ticket");
+                "Zum Ticket");
             var eb = new DiscordEmbedBuilder()
             {
                 Title = "Fehler | Bereits ein Ticket geöffnet!",
@@ -35,6 +35,7 @@ public class TicketManager
             await context.RespondAsync(mb);
             return null;
         }
+
         DiscordChannel Ticket_category =
             context.Guild.GetChannel(ulong.Parse(BotConfig.GetConfig()["SupportConfig"]["SupportCategoryId"]));
         DiscordChannel? ticket_channel = null;
@@ -59,7 +60,6 @@ public class TicketManager
         await TicketManagerHelper.InsertHeaderIntoTicket(context, ticket_channel, discordMember);
         await TicketManagerHelper.SendStaffNotice(context, ticket_channel, discordMember);
         return ticket_channel;
-
     }
 
     public static async Task OpenTicket(DiscordInteraction interaction, TicketType ticketType, DiscordClient client, TicketCreator ticketCreator)
@@ -161,7 +161,7 @@ public class TicketManager
 
     public static async Task CloseTicket(CommandContext ctx, DiscordChannel ticket_channel)
     {
-        // fetch first message of this channel 
+        // fetch first message of this channel
         var channelmessages = await ctx.Channel.GetMessagesAsync();
         var message = channelmessages.LastOrDefault();
         var umb = new DiscordMessageBuilder();
@@ -180,7 +180,6 @@ public class TicketManager
         };
         await ticket_channel.SendMessageAsync(ceb);
 
-
         var eb1 = new DiscordEmbedBuilder
         {
             Description = "Transcript wird gespeichert....",
@@ -198,7 +197,6 @@ public class TicketManager
         await TicketManagerHelper.InsertTransscriptIntoDB(ticket_channel, TranscriptType.User, transcriptURL);
 
         await msg.ModifyAsync(eb1.Build());
-
 
         var con = DatabaseService.GetConnection();
         string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ticket_channel.Id}'";
@@ -232,14 +230,14 @@ public class TicketManager
         await reader2.CloseAsync();
 
         var button = new DiscordLinkButtonComponent(
-        "https://discord.com/channels/" + ctx.Guild.Id + "/" + ctx.Channel.Id, "Zum Ticket");
+            "https://discord.com/channels/" + ctx.Guild.Id + "/" + ctx.Channel.Id, "Zum Ticket");
 
         var del_ticketbutton = new DiscordButtonComponent(ButtonStyle.Danger, "ticket_delete", "Ticket löschen ❌");
         var teb = new DiscordEmbedBuilder
         {
             Title = "Ticket geschlossen",
             Description =
-            $"Das Ticket wurde erfolgreich geschlossen!\n Geschlossen von {ctx.User.UsernameWithDiscriminator} ``{ctx.User.Id}``",
+                $"Das Ticket wurde erfolgreich geschlossen!\n Geschlossen von {ctx.User.UsernameWithDiscriminator} ``{ctx.User.Id}``",
             Color = DiscordColor.Green
         };
 
@@ -259,12 +257,7 @@ public class TicketManager
                 await TicketManagerHelper.SendTranscriptsToUser(member, transcriptURL);
             }
         }
-
-
-
     }
-
-
 
     public static async Task CloseTicket(ComponentInteractionCreateEventArgs interaction, DiscordChannel ticket_channel)
     {
@@ -296,7 +289,6 @@ public class TicketManager
         };
         await ticket_channel.SendMessageAsync(ceb);
 
-
         var eb1 = new DiscordEmbedBuilder
         {
             Description = "Transcript wird gespeichert....",
@@ -314,7 +306,6 @@ public class TicketManager
         await TicketManagerHelper.InsertTransscriptIntoDB(ticket_channel, TranscriptType.User, transcriptURL);
 
         await msg.ModifyAsync(eb1.Build());
-
 
         var con = DatabaseService.GetConnection();
         string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ticket_channel.Id}'";

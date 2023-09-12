@@ -37,7 +37,6 @@ public static class DatabaseService
         }
     }
 
-
     public static void CloseConnection()
     {
         try

@@ -43,13 +43,10 @@ internal class Program : BaseCommandModule
             Environment.Exit(0);
         }
 
-
         var serviceProvider = new ServiceCollection()
             .AddLogging(lb => lb.AddSerilog())
 
             .BuildServiceProvider();
-
-
 
         DatabaseService.OpenConnection();
         var discord = new DiscordClient(new DiscordConfiguration
@@ -92,7 +89,6 @@ internal class Program : BaseCommandModule
         return Task.CompletedTask;
     }
 
-
     private static Task<int> GetPrefix(DiscordMessage message)
     {
         return Task.Run(() =>
@@ -106,7 +102,6 @@ internal class Program : BaseCommandModule
             {
                 prefix = "!!!"; //Fallback Config
             }
-
 
             int CommandStart = -1;
             CommandStart = message.GetStringPrefixLength(prefix);
@@ -136,7 +131,6 @@ internal class Program : BaseCommandModule
             }
         }
     }
-
 
     private static Task Discord_ClientErrored(DiscordClient sender, ClientErrorEventArgs e)
     {

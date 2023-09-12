@@ -9,7 +9,6 @@ using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using DisCatSharp.Interactivity.Extensions;
-using Microsoft.VisualBasic;
 using Npgsql;
 using System.Diagnostics;
 
@@ -80,13 +79,13 @@ public class TicketManagerHelper
         await newcon.OpenAsync();
 
         string query = $@"
-        SELECT COUNT(*) 
-        FROM ticketstore 
+        SELECT COUNT(*)
+        FROM ticketstore
         WHERE ticket_id = (
-            SELECT ticket_id 
-            FROM ticketcache 
+            SELECT ticket_id
+            FROM ticketcache
             WHERE tchannel_id = '{(long)ch.Id}'
-        ) 
+        )
         AND closed = false";
 
         await using NpgsqlCommand cmd = new(query, newcon);
@@ -99,8 +98,6 @@ public class TicketManagerHelper
 
         return isTicketOpen;
     }
-
-
 
     public static async Task<long> GetOpenTicketChannel(long user_id)
     {
@@ -148,6 +145,7 @@ public class TicketManagerHelper
 
         return ticket_id;
     }
+
     public static async Task InsertHeaderIntoTicket(CommandContext ctx, DiscordChannel tchannel, DiscordMember member)
     {
         string pingstring = $"{member.Mention} | {ctx.User.Mention}";
@@ -229,6 +227,7 @@ public class TicketManagerHelper
             }
         }
     }
+
     private static string GenerateAdditionalNotes()
     {
         List<string> notes = new();
@@ -257,7 +256,6 @@ public class TicketManagerHelper
 
         return additionalNotes;
     }
-
 
     public static async Task SendStaffNotice(CommandContext ctx, DiscordChannel ticket_channel, DiscordMember user)
     {
@@ -294,7 +292,6 @@ public class TicketManagerHelper
 
     public static async Task DeleteTicket(ComponentInteractionCreateEventArgs interaction)
     {
-
         var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
         if (!teamler)
         {
@@ -302,8 +299,8 @@ public class TicketManagerHelper
                 new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
             return;
         }
-        await interaction.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
 
+        await interaction.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
 
         var del_ticketbutton =
             new DiscordButtonComponent(ButtonStyle.Danger, "ticket_delete", "Ticket löschen ❌", true);
@@ -396,7 +393,7 @@ public class TicketManagerHelper
                 $"UPDATE ticketcache SET ticket_users = array_append(ticket_users, '{(long)user.Id}') WHERE ticket_id = '{ticket_id}'",
                 con);
         await cmd2.ExecuteNonQueryAsync();
-        // add perms 
+        // add perms
         var channel = ticket_channel;
         var member = await ctx.Guild.GetMemberAsync(user.Id);
         await channel.AddOverwriteAsync(member,
@@ -444,7 +441,7 @@ public class TicketManagerHelper
                 $"UPDATE ticketcache SET ticket_users = array_append(ticket_users, '{(long)user.Id}') WHERE ticket_id = '{ticket_id}'",
                 con);
         await cmd2.ExecuteNonQueryAsync();
-        // add perms 
+        // add perms
         var channel = ticket_channel;
         var member = await interaction.Guild.GetMemberAsync(user.Id);
         await channel.AddOverwriteAsync(member,
@@ -544,13 +541,13 @@ public class TicketManagerHelper
             return;
         }
         var buttons = new List<DiscordButtonComponent>();
-        // userinfo button 
+        // userinfo button
         var userinfo = new DiscordButtonComponent(ButtonStyle.Primary, "ticket_userinfo", "Userinfo");
         buttons.Add(userinfo);
         // flag transcript button
         var flagtranscript = new DiscordButtonComponent(ButtonStyle.Primary, "ticket_flagtranscript", "Transcript Flaggen");
         buttons.Add(flagtranscript);
-        // render 
+        // render
         var imb = new DiscordInteractionResponseBuilder().AddComponents(buttons).AsEphemeral();
         await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, imb);
     }
@@ -568,8 +565,8 @@ public class TicketManagerHelper
         var irb = new DiscordInteractionResponseBuilder().WithContent("Wähle ein User aus dessen infos du sehen willst.").AddComponents(selector).AsEphemeral();
         // Update original
         await interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, irb);
-
     }
+
     public static async Task UserInfo_Callback(ComponentInteractionCreateEventArgs args)
     {
         // get user
@@ -599,10 +596,9 @@ public class TicketManagerHelper
         await args.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, irb);
     }
 
-
     public static async Task<List<DiscordUser>> GetTicketUsers(DiscordInteraction interaction)
     {
-        // get them to list 
+        // get them to list
         var con = DatabaseService.GetConnection();
         string query = $"SELECT ticket_users FROM ticketcache where tchannel_id = '{(long)interaction.Channel.Id}'";
         await using NpgsqlCommand cmd = new(query, con);
@@ -646,7 +642,6 @@ public class TicketManagerHelper
 
         return ticket_users_discord;
     }
-
 
     public static async Task RemoveUserFromTicket(CommandContext ctx, DiscordChannel ticket_channel,
     DiscordUser user, bool noautomatic = false)
@@ -744,7 +739,6 @@ public class TicketManagerHelper
             };
         }
     }
-
 
     public static async Task<bool> CheckIfUserIsInTicket(DiscordInteraction interaction, DiscordChannel ticket_channel,
         DiscordUser user)

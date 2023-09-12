@@ -26,5 +26,4 @@ public class SnippetManagerHelper
 
         return null;
     }
-
 }

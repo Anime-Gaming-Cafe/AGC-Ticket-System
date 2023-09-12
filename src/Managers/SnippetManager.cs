@@ -10,7 +10,6 @@ namespace AGC_Ticket_System.Managers;
 
 public class SnippetManager
 {
-    
 }
 
 [EventHandler]
@@ -18,6 +17,7 @@ public class SnippetListener
 {
     private readonly long catid = long.Parse(BotConfig.GetConfig()["SupportConfig"]["SupportCategoryId"]);
     private readonly long teamroleid = long.Parse(BotConfig.GetConfig()["SupportConfig"]["TeamRoleId"]);
+
     [Event]
     public async Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
     {
@@ -69,7 +69,6 @@ public class SnippetListener
                 mb.WithContent(ping).WithEmbed(eb);
                 await e.Message.Channel.SendMessageAsync(mb);
             }
-
         });
     }
 }

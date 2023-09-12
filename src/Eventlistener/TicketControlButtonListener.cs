@@ -63,8 +63,6 @@ public class TicketManagerEventHandler : BaseCommandModule
                 await TicketManagerHelper.TranscriptFlag_Callback(e.Interaction, client);
             }
 
-
-
             return Task.CompletedTask;
         });
     }

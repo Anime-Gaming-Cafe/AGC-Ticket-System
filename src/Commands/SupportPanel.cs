@@ -23,7 +23,6 @@ public class SupportPanel : BaseCommandModule
                 > Wann sollte ich ein Ticket öffnen?
                 Wenn du irgendwelche Fragen hast oder irgendetwas unklar ist, du jemanden wegen Regelverstoß der Server Regeln oder der Discord Richtlinen melden möchtest!
 
-
                 > Wie öffne ich ein Ticket?
                 Wenn du ein Ticket öffnen willst, klicke unten auf "Ticket öffnen" und wähle danach eine der Kategorien aus, um was es geht. Danach wird ein Ticket mit dir erstellt und du kannst dein Anliegen schlidern.
                 """).WithColor(BotConfig.GetEmbedColor())
@@ -77,7 +76,7 @@ public class SupportPanelListener : SupportPanel
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, ib);
             }
 
-            // handle ticket opening 
+            // handle ticket opening
             if (e.Interaction.Data.CustomId == "ticket_open_report")
             {
                 await TicketManager.OpenTicket(e.Interaction, TicketType.Report, client, TicketCreator.User);

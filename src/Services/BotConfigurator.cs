@@ -27,7 +27,6 @@ public static class BotConfig
         return ConfigIni;
     }
 
-
     public static void SetConfig(string key, string value, string data)
     {
         IniData ConfigIni;
@@ -36,7 +35,6 @@ public static class BotConfig
         ConfigIni[key][value] = data;
         parser.WriteFile("config.ini", ConfigIni);
     }
-
 
     public static DiscordColor GetEmbedColor()
     {

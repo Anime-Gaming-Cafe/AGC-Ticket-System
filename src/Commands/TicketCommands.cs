@@ -57,6 +57,4 @@ public class TicketCommands : BaseCommandModule
     {
         await TicketManager.CloseTicket(ctx, ctx.Channel);
     }
-
-
 }
