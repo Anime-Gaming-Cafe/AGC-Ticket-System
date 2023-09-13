@@ -410,6 +410,23 @@ public class TicketManagerHelper
             };
             await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(afteraddembed));
         }
+        // dm user
+        DiscordEmbed userEmbed = new DiscordEmbedBuilder()
+                       .WithTitle("Du wurdest zu einem Ticket hinzugefügt!")
+                       .WithDescription($"Du wurdest von {ctx.User.Mention} zu einem Ticket hinzugefügt!")
+                       .WithColor(DiscordColor.Green).Build();
+        DiscordMessageBuilder userDM = new DiscordMessageBuilder();
+        userDM.WithEmbed(userEmbed);
+        var button = new DiscordButtonComponent(ButtonStyle.Link, $"https://discord.com/channels/{ctx.Guild.Id}/{channel.Id}", "Zum Ticket");
+        userDM.AddComponents(button);
+        try
+        {
+            await member.SendMessageAsync(userDM);
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     public static async Task AddUserToTicket(DiscordInteraction interaction, DiscordChannel ticket_channel,
