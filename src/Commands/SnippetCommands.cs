@@ -8,14 +8,16 @@ using System.Text.RegularExpressions;
 
 namespace AGC_Ticket_System.Commands;
 
-public class SnippetCommands : BaseCommandModule
-{
-
-}
-
 [Group("snippetmanager")]
 public class SnippetManagerCommands : BaseCommandModule
 {
+    [GroupCommand]
+    [RequireStaffRole]
+    public async Task SnippetManager_Help(CommandContext ctx)
+    {
+        await SnippetManager(ctx);
+    }
+
     [Command("help")]
     [RequireStaffRole]
     public async Task SnippetManager(CommandContext ctx)
