@@ -373,6 +373,7 @@ public class TicketManagerHelper
                 $"UPDATE ticketcache SET claimed_from = '{(long)interaction.User.Id}' WHERE tchannel_id = '{(long)interaction.Interaction.ChannelId}'",
                 con);
         await cmd3.ExecuteNonQueryAsync();
+        await interaction.Interaction.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(claimembed));
     }
 
     public static async Task AddUserToTicket(CommandContext ctx, DiscordChannel ticket_channel, DiscordUser user, bool addedAfter = false)
