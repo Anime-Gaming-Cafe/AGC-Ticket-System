@@ -2,7 +2,6 @@
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
-using DisCatSharp.Enums;
 using Npgsql;
 using System.Text;
 using System.Text.RegularExpressions;
