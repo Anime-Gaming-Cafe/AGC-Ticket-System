@@ -897,7 +897,7 @@ public class TicketManagerHelper
         var psi = new ProcessStartInfo();
         var BotToken = BotConfig.GetConfig()["MainConfig"]["Discord_API_Token"];
         var tick = await GetTicketIdFromChannel(ticket_channel);
-        var id = GenerateTicketID(3);
+        var id = GenerateTicketID(5);
         psi.FileName = "DiscordChatExporter.Cli.exe";
         psi.Arguments =
             $"export -t \"{BotToken}\" -c {ticket_channel.Id} --media --reuse-media --media-dir transcripts\\Assets -o transcripts\\{tick}-{id}.html";
