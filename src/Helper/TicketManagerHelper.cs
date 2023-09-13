@@ -617,6 +617,7 @@ public class TicketManagerHelper
         // get prev ticketcount
         var prev_tickets = await GetTicketCountFromThisUser((long)member.Id) - 1;
         Console.WriteLine(12);
+        var voicestate = member.VoiceState;
         // generate embed
         var eb = new DiscordEmbedBuilder()
             .WithTitle("Userinfo")
@@ -624,6 +625,7 @@ public class TicketManagerHelper
             .WithColor(toprole_color)
             .AddField(new DiscordEmbedField("Beigetreten am", joined_at, false)
             ).AddField(new DiscordEmbedField("Erstellt am", created_at, false)
+            ).AddField(new DiscordEmbedField("Aktueller Voice-Channel", voicestate != null ? voicestate.Channel.Mention : "Kein Voice-Channel", false)
             ).AddField(new DiscordEmbedField("Höchste Rolle", toprole != null ? toprole.Mention : "Keine Rolle", false)
             ).AddField(new DiscordEmbedField("Ticketcount", prev_tickets.ToString())).WithFooter("AGC-Support-System")
             .WithThumbnail(member.AvatarUrl)
