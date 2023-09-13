@@ -9,6 +9,7 @@ using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using DisCatSharp.Interactivity.Extensions;
+using Microsoft.VisualBasic;
 using Npgsql;
 using System.Diagnostics;
 
@@ -408,24 +409,24 @@ public class TicketManagerHelper
                 Description = $"Der User {user.Mention} ``{user.Id}`` wurde zum Ticket hinzugefügt!",
                 Color = DiscordColor.Green
             };
-            await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(afteraddembed));
-        }
-        // dm user
-        DiscordEmbed userEmbed = new DiscordEmbedBuilder()
-                       .WithTitle("Du wurdest zu einem Ticket hinzugefügt!")
-                       .WithDescription($"Du wurdest von {ctx.User.Mention} zu einem Ticket hinzugefügt!")
-                       .WithColor(DiscordColor.Green).Build();
-        DiscordMessageBuilder userDM = new DiscordMessageBuilder();
-        userDM.WithEmbed(userEmbed);
-        var button = new DiscordButtonComponent(ButtonStyle.Link, $"https://discord.com/channels/{ctx.Guild.Id}/{channel.Id}", "Zum Ticket");
-        userDM.AddComponents(button);
-        try
-        {
-            await member.SendMessageAsync(userDM);
-        }
-        catch
-        {
-            // ignored
+            var mb = new DiscordMessageBuilder().WithContent(user.Mention + " wurde zum Ticket hinzugefügt.")
+                .AddEmbed(afteraddembed);
+            DiscordEmbed userEmbed = new DiscordEmbedBuilder()
+                .WithTitle("Du wurdest zu einem Ticket hinzugefügt!")
+                .WithDescription($"Du wurdest von {ctx.User.Mention} zu einem Ticket hinzugefügt!")
+                .WithColor(DiscordColor.Green).Build();
+            DiscordMessageBuilder userDM = new DiscordMessageBuilder();
+            userDM.WithEmbed(userEmbed);
+            DiscordLinkButtonComponent button = new DiscordLinkButtonComponent($"https://discord.com/channels/{ctx.Guild.Id}/{channel.Id}", "Zum Ticket");
+            userDM.AddComponents(button);
+            try
+            {
+                await member.SendMessageAsync(userDM);
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 
@@ -472,8 +473,24 @@ public class TicketManagerHelper
                 Title = "User hinzugefügt",
                 Description = $"Der User {user.Mention} ``{user.Id}`` wurde zum Ticket hinzugefügt!",
                 Color = DiscordColor.Green
-            };
-            await interaction.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(afteraddembed));
+            }; ;
+            var mb = new DiscordMessageBuilder().WithContent(user.Mention + " wurde zum Ticket hinzugefügt.")
+                .AddEmbed(afteraddembed);
+            await interaction.Channel.SendMessageAsync(mb);
+            DiscordEmbed userEmbed = new DiscordEmbedBuilder()
+                .WithTitle("Du wurdest zu einem Ticket hinzugefügt!")
+                .WithDescription($"Du wurdest von {interaction.User.Mention} zu einem Ticket hinzugefügt!")
+                .WithColor(DiscordColor.Green).Build();
+            DiscordLinkButtonComponent button = new DiscordLinkButtonComponent($"https://discord.com/channels/{interaction.Guild.Id}/{channel.Id}", "Zum Ticket");
+            DiscordMessageBuilder userDM = new DiscordMessageBuilder().WithEmbed(userEmbed).AddComponents(button);
+            try
+            {
+                await user.SendMessageAsync(userDM);
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 
