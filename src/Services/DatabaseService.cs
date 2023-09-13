@@ -11,11 +11,11 @@ public static class DatabaseService
     {
         try
         {
-            var dbConfigSection = "DatabaseCfg";
-            var DbHost = BotConfig.GetConfig()[dbConfigSection]["Database_Host"];
-            var DbUser = BotConfig.GetConfig()[dbConfigSection]["Database_User"];
-            var DbPass = BotConfig.GetConfig()[dbConfigSection]["Database_Password"];
-            var DbName = BotConfig.GetConfig()[dbConfigSection]["Database"];
+            string dbConfigSection = "DatabaseCfg";
+            string DbHost = BotConfig.GetConfig()[dbConfigSection]["Database_Host"];
+            string DbUser = BotConfig.GetConfig()[dbConfigSection]["Database_User"];
+            string DbPass = BotConfig.GetConfig()[dbConfigSection]["Database_Password"];
+            string DbName = BotConfig.GetConfig()[dbConfigSection]["Database"];
 
             dbConnection = new NpgsqlConnection($"Host={DbHost};Username={DbUser};Password={DbPass};Database={DbName}");
             try
@@ -70,7 +70,7 @@ public static class DatabaseService
     {
         try
         {
-            using var cmd = new NpgsqlCommand(sql, dbConnection);
+            using NpgsqlCommand cmd = new(sql, dbConnection);
             cmd.ExecuteNonQuery();
         }
         catch (Exception ex)
@@ -87,11 +87,11 @@ public static class DatabaseService
 
     public static string GetConnectionString()
     {
-        var dbConfigSection = "DatabaseCfg";
-        var DbHost = BotConfig.GetConfig()[dbConfigSection]["Database_Host"];
-        var DbUser = BotConfig.GetConfig()[dbConfigSection]["Database_User"];
-        var DbPass = BotConfig.GetConfig()[dbConfigSection]["Database_Password"];
-        var DbName = BotConfig.GetConfig()[dbConfigSection]["Database"];
+        string dbConfigSection = "DatabaseCfg";
+        string DbHost = BotConfig.GetConfig()[dbConfigSection]["Database_Host"];
+        string DbUser = BotConfig.GetConfig()[dbConfigSection]["Database_User"];
+        string DbPass = BotConfig.GetConfig()[dbConfigSection]["Database_Password"];
+        string DbName = BotConfig.GetConfig()[dbConfigSection]["Database"];
         return $"Host={DbHost};Username={DbUser};Password={DbPass};Database={DbName}";
     }
 
@@ -117,21 +117,17 @@ public static class DatabaseService
         string insertQuery = $"INSERT INTO {tableName} ({string.Join(", ", columnValuePairs.Keys)}) " +
                              $"VALUES ({string.Join(", ", columnValuePairs.Keys.Select(k => $"@{k}"))})";
 
-        await using (NpgsqlConnection connection = new(GetConnectionString()))
+        await using NpgsqlConnection connection = new(GetConnectionString());
+        await connection.OpenAsync();
+
+        await using NpgsqlCommand command = new(insertQuery, connection);
+        foreach (var kvp in columnValuePairs)
         {
-            await connection.OpenAsync();
-
-            await using (NpgsqlCommand command = new(insertQuery, connection))
-            {
-                foreach (var kvp in columnValuePairs)
-                {
-                    NpgsqlParameter parameter = new($"@{kvp.Key}", kvp.Value);
-                    command.Parameters.Add(parameter);
-                }
-
-                await command.ExecuteNonQueryAsync();
-            }
+            NpgsqlParameter parameter = new($"@{kvp.Key}", kvp.Value);
+            command.Parameters.Add(parameter);
         }
+
+        await command.ExecuteNonQueryAsync();
     }
 
     public static async Task<List<Dictionary<string, object>>> SelectDataFromTable(string tableName,
@@ -160,32 +156,28 @@ public static class DatabaseService
         {
             await connection.OpenAsync();
 
-            await using (NpgsqlCommand command = new(selectQuery, connection))
-            {
-                if (whereConditions != null && whereConditions.Count > 0)
-                    foreach (var condition in whereConditions)
-                    {
-                        NpgsqlParameter parameter = new($"@{condition.Key}", condition.Value);
-                        command.Parameters.Add(parameter);
-                    }
-
-                await using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+            await using NpgsqlCommand command = new(selectQuery, connection);
+            if (whereConditions != null && whereConditions.Count > 0)
+                foreach (var condition in whereConditions)
                 {
-                    while (await reader.ReadAsync())
-                    {
-                        Dictionary<string, object> row = new();
-
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            string columnName = reader.GetName(i);
-                            object columnValue = reader.GetValue(i);
-
-                            row[columnName] = columnValue;
-                        }
-
-                        results.Add(row);
-                    }
+                    NpgsqlParameter parameter = new($"@{condition.Key}", condition.Value);
+                    command.Parameters.Add(parameter);
                 }
+
+            await using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                Dictionary<string, object> row = new();
+
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    string columnName = reader.GetName(i);
+                    object columnValue = reader.GetValue(i);
+
+                    row[columnName] = columnValue;
+                }
+
+                results.Add(row);
             }
         }
 
@@ -210,17 +202,15 @@ public static class DatabaseService
         {
             await connection.OpenAsync();
 
-            await using (NpgsqlCommand command = new(deleteQuery, connection))
-            {
-                if (whereConditions != null && whereConditions.Count > 0)
-                    foreach (var condition in whereConditions)
-                    {
-                        NpgsqlParameter parameter = new($"@{condition.Key}", condition.Value.value);
-                        command.Parameters.Add(parameter);
-                    }
+            await using NpgsqlCommand command = new(deleteQuery, connection);
+            if (whereConditions != null && whereConditions.Count > 0)
+                foreach (var condition in whereConditions)
+                {
+                    NpgsqlParameter parameter = new($"@{condition.Key}", condition.Value.value);
+                    command.Parameters.Add(parameter);
+                }
 
-                rowsAffected = await command.ExecuteNonQueryAsync();
-            }
+            rowsAffected = await command.ExecuteNonQueryAsync();
         }
 
         return rowsAffected;

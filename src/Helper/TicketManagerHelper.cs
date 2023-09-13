@@ -8,22 +8,16 @@ using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
-using DisCatSharp.Exceptions;
 using DisCatSharp.Interactivity.Extensions;
-using Microsoft.VisualBasic;
 using Npgsql;
-using Sentry;
-using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using AGC_Ticket_System.Helper;
 
 public class TicketManagerHelper
 {
     private static readonly Random random = new();
     private static DiscordClient _client;
 
-    public TicketManagerHelper (DiscordClient client)
+    public TicketManagerHelper(DiscordClient client)
     {
         _client = client;
     }
@@ -426,9 +420,9 @@ public class TicketManagerHelper
                 .WithTitle("Du wurdest zu einem Ticket hinzugefügt!")
                 .WithDescription($"Du wurdest von {ctx.User.Mention} zu einem Ticket hinzugefügt!")
                 .WithColor(DiscordColor.Green).Build();
-            DiscordMessageBuilder userDM = new DiscordMessageBuilder();
+            DiscordMessageBuilder userDM = new();
             userDM.WithEmbed(userEmbed);
-            DiscordLinkButtonComponent button = new DiscordLinkButtonComponent($"https://discord.com/channels/{ctx.Guild.Id}/{channel.Id}", "Zum Ticket");
+            DiscordLinkButtonComponent button = new($"https://discord.com/channels/{ctx.Guild.Id}/{channel.Id}", "Zum Ticket");
             userDM.AddComponents(button);
             try
             {
@@ -492,7 +486,7 @@ public class TicketManagerHelper
                 .WithTitle("Du wurdest zu einem Ticket hinzugefügt!")
                 .WithDescription($"Du wurdest von {interaction.User.Mention} zu einem Ticket hinzugefügt!")
                 .WithColor(DiscordColor.Green).Build();
-            DiscordLinkButtonComponent button = new DiscordLinkButtonComponent($"https://discord.com/channels/{interaction.Guild.Id}/{channel.Id}", "Zum Ticket");
+            DiscordLinkButtonComponent button = new($"https://discord.com/channels/{interaction.Guild.Id}/{channel.Id}", "Zum Ticket");
             DiscordMessageBuilder userDM = new DiscordMessageBuilder().WithEmbed(userEmbed).AddComponents(button);
             try
             {

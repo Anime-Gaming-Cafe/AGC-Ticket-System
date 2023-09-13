@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using Serilog;
 using System.Reflection;
+using ILogger = Serilog.ILogger;
 
 internal class Program : BaseCommandModule
 {
@@ -23,7 +24,7 @@ internal class Program : BaseCommandModule
 
     private static async Task MainAsync()
     {
-        var logger = Log.Logger = new LoggerConfiguration()
+        ILogger logger = Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .WriteTo.Console()
             .CreateLogger();
@@ -43,13 +44,13 @@ internal class Program : BaseCommandModule
             Environment.Exit(0);
         }
 
-        var serviceProvider = new ServiceCollection()
+        ServiceProvider serviceProvider = new ServiceCollection()
             .AddLogging(lb => lb.AddSerilog())
 
             .BuildServiceProvider();
 
         DatabaseService.OpenConnection();
-        var discord = new DiscordClient(new DiscordConfiguration
+        DiscordClient discord = new(new DiscordConfiguration
         {
             Token = DcApiToken,
             TokenType = TokenType.Bot,
@@ -62,7 +63,7 @@ internal class Program : BaseCommandModule
             ServiceProvider = serviceProvider
         });
         discord.RegisterEventHandlers(Assembly.GetExecutingAssembly());
-        var commands = discord.UseCommandsNext(new CommandsNextConfiguration
+        CommandsNextExtension commands = discord.UseCommandsNext(new CommandsNextConfiguration
         {
             PrefixResolver = GetPrefix,
             EnableDms = false,
@@ -157,9 +158,6 @@ internal class Program : BaseCommandModule
 
 public static class GlobalProperties
 {
-    // Server Staffrole ID
-    public static ulong StaffRoleId { get; } = ulong.Parse(BotConfig.GetConfig()["ServerConfig"]["StaffRoleId"]);
-
     private static bool ParseBoolean(string boolString)
     {
         if (bool.TryParse(boolString, out bool parsedBool))

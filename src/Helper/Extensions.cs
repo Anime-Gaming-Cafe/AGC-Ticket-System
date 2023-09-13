@@ -1,6 +1,6 @@
-﻿using DisCatSharp.Entities;
+﻿using DisCatSharp;
+using DisCatSharp.Entities;
 using DisCatSharp.Exceptions;
-using DisCatSharp;
 
 namespace AGC_Ticket_System.Helper;
 

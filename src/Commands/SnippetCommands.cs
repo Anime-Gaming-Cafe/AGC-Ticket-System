@@ -113,7 +113,7 @@ public class SnippetManagerCommands : BaseCommandModule
             .WithColor(DiscordColor.Gold);
 
         bool snippetFound = false;
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
 
         while (await reader.ReadAsync())
         {
