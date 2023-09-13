@@ -62,6 +62,10 @@ public class TicketManagerEventHandler : BaseCommandModule
             {
                 await TicketManagerHelper.TranscriptFlag_Callback(e.Interaction, client);
             }
+            else if (e.Interaction.Data.CustomId == "generatetranscript")
+            {
+                await TicketManagerHelper.GenerateTranscriptButton(e.Interaction);
+            }
 
             return Task.CompletedTask;
         });

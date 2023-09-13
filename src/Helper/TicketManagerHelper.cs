@@ -8,15 +8,25 @@ using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
+using DisCatSharp.Exceptions;
 using DisCatSharp.Interactivity.Extensions;
 using Microsoft.VisualBasic;
 using Npgsql;
+using Sentry;
+using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using AGC_Ticket_System.Helper;
 
 public class TicketManagerHelper
 {
     private static readonly Random random = new();
+    private static DiscordClient _client;
 
+    public TicketManagerHelper (DiscordClient client)
+    {
+        _client = client;
+    }
     public static async Task<long> GetTicketOwnerFromChannel(DiscordChannel channel)
     {
         var con = DatabaseService.GetConnection();
@@ -583,9 +593,31 @@ public class TicketManagerHelper
         // flag transcript button
         var flagtranscript = new DiscordButtonComponent(ButtonStyle.Primary, "ticket_flagtranscript", "Transcript Flaggen");
         buttons.Add(flagtranscript);
+        var generatetranscript =
+            new DiscordButtonComponent(ButtonStyle.Primary, "generatetranscript", "Transcript erzeugen");
+        buttons.Add(generatetranscript);
         // render
         var imb = new DiscordInteractionResponseBuilder().AddComponents(buttons).AsEphemeral();
         await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, imb);
+    }
+
+    public static async Task GenerateTranscriptButton(DiscordInteraction interaction)
+    {
+        var teamler = TeamChecker.IsSupporter(await interaction.User.ConvertToMember(interaction.Guild));
+        if (!teamler)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
+            return;
+        }
+        var channel = interaction.Channel;
+        var ticket_id = await GetTicketIdFromChannel(channel);
+        var ticket_owner = await GetTicketOwnerFromChannel(channel);
+        await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+        await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"Transcript wird generiert..."));
+        var transcriptURL = await GenerateTranscript(channel);
+        await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"Transcript: {transcriptURL}"));
+        return;
     }
 
     public static async Task UserInfo(DiscordInteraction interaction)
