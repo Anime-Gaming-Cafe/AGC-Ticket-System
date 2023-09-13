@@ -904,9 +904,7 @@ public class TicketManagerHelper
         psi.RedirectStandardOutput = true;
         var process = new Process();
         process.StartInfo = psi;
-        process.Start();
-
-        string output = await process.StandardOutput.ReadToEndAsync();
+        process.Start(); ;
         await process.WaitForExitAsync();
         var baselink = $"https://ticketsystem.animegamingcafe.de/tickets/" + $"{tick}-{id}.html";
 
