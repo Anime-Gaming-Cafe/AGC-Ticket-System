@@ -9,11 +9,36 @@ using System.Text.RegularExpressions;
 
 namespace AGC_Ticket_System.Commands;
 
-[Group("snippetmanager")]
 public class SnippetCommands : BaseCommandModule
 {
+
+}
+
+[Group("snippetmanager")]
+public class SnippetManagerCommands : BaseCommandModule
+{
+    [Command("help")]
+    [RequireStaffRole]
+    public async Task SnippetManager(CommandContext ctx)
+    {
+        string prefix = ctx.Prefix;
+        DiscordEmbed eb = new DiscordEmbedBuilder().WithTitle("Snippet Manager")
+            .WithDescription("Verwaltung der Snippets")
+            .WithColor(DiscordColor.Red)
+            .WithFooter("AGC Support-System", ctx.Guild.IconUrl)
+            .AddField(new("Hinzufügen", $"`{prefix}snippetmanager add <name> <content>`"))
+            .AddField(new("Entfernen", $"`{prefix}snippetmanager remove <name>`"))
+            .AddField(new("Auflisten", $"`{prefix}snippetmanager list`"))
+            .AddField(new("Suchen", $"`{prefix}snippetmanager search <name>`"))
+            .AddField(new("Kürzelsuche", $"`{prefix}snippetmanager shortcutsearch <dein_text>`"))
+            .AddField(new("Hilfe", $"`{prefix}snippetmanager help`"))
+            .Build();
+        await ctx.RespondAsync(eb);
+    }
+
+
     [Command("add")]
-    [RequirePermissions(Permissions.Administrator)]
+    [RequireStaffRole]
     public async Task AddSnippet(CommandContext ctx, string name, [RemainingText] string content)
     {
         await using var con = new NpgsqlConnection(DatabaseService.GetConnectionString());
@@ -46,7 +71,7 @@ public class SnippetCommands : BaseCommandModule
 
 
     [Command("remove")]
-    [RequirePermissions(Permissions.Administrator)]
+    [RequireStaffRole]
     public async Task RemoveSnippet(CommandContext ctx, string name)
     {
         await using var con = new NpgsqlConnection(DatabaseService.GetConnectionString());
