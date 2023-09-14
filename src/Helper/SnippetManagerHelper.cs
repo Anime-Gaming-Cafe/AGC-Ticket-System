@@ -22,6 +22,7 @@ public class SnippetManagerHelper
         {
             return reader.GetString(0);
         }
+
         await reader.CloseAsync();
 
         return null;

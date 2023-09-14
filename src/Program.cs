@@ -1,4 +1,5 @@
-﻿using AGC_Ticket;
+﻿using System.Reflection;
+using AGC_Ticket;
 using AGC_Ticket.Services.DatabaseHandler;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Serilog;
-using System.Reflection;
 using ILogger = Serilog.ILogger;
 
 internal class Program : BaseCommandModule
@@ -46,7 +46,6 @@ internal class Program : BaseCommandModule
 
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddLogging(lb => lb.AddSerilog())
-
             .BuildServiceProvider();
 
         DatabaseService.OpenConnection();
@@ -127,7 +126,8 @@ internal class Program : BaseCommandModule
                 await using NpgsqlCommand cmd1 = new(query1, con);
                 closedTickets = Convert.ToInt32(cmd1.ExecuteScalar());
 
-                await client.UpdateStatusAsync(new DiscordActivity(name: $"Tickets: Offen: {openTickets} | Gesamt: {openTickets + closedTickets}", type: ActivityType.Custom));
+                await client.UpdateStatusAsync(new DiscordActivity(
+                    $"Tickets: Offen: {openTickets} | Gesamt: {openTickets + closedTickets}", ActivityType.Custom));
                 await Task.Delay(TimeSpan.FromMinutes(1));
             }
         }
@@ -149,6 +149,7 @@ internal class Program : BaseCommandModule
         {
             return Task.CompletedTask;
         }
+
         cn.Client.Logger.LogError($"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}");
         cn.Client.Logger.LogError($"Exception occured: {e.Exception.GetType()}: {e.Exception.StackTrace}");
 

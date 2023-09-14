@@ -27,30 +27,40 @@ public class SnippetListener
             {
                 return;
             }
+
             if (e.Message.Author.IsBot)
             {
                 return;
             }
+
             if (e.Message.Channel.Parent == null)
             {
                 return;
             }
+
             if ((long)e.Message.Channel.Parent.Id != catid)
             {
                 return;
             }
+
             var openticket = await TicketManagerHelper.IsOpenTicket(e.Message.Channel);
             if (!openticket)
             {
                 return;
             }
+
             var sup = TeamChecker.IsSupporter(await e.Message.Author.ConvertToMember(e.Message.Guild));
             if (!sup)
             {
                 return;
             }
+
             var string_to_search = e.Message.Content;
-            if (string.IsNullOrEmpty(string_to_search)) { return; }
+            if (string.IsNullOrEmpty(string_to_search))
+            {
+                return;
+            }
+
             string? snipped = await SnippetManagerHelper.GetSnippetAsync(string_to_search);
             if (snipped != null && !e.Message.Author.IsBot)
             {
@@ -65,6 +75,7 @@ public class SnippetListener
                 {
                     ping = ping + $" {user.Mention}";
                 }
+
                 DiscordMessageBuilder mb = new();
                 mb.WithContent(ping).WithEmbed(eb);
                 await e.Message.Channel.SendMessageAsync(mb);

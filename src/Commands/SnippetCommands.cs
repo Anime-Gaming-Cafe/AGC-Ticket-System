@@ -1,10 +1,10 @@
-﻿using AGC_Ticket.Services.DatabaseHandler;
+﻿using System.Text;
+using System.Text.RegularExpressions;
+using AGC_Ticket.Services.DatabaseHandler;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
 using Npgsql;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace AGC_Ticket_System.Commands;
 
@@ -27,12 +27,12 @@ public class SnippetManagerCommands : BaseCommandModule
             .WithDescription("Verwaltung der Snippets")
             .WithColor(DiscordColor.Red)
             .WithFooter("AGC Support-System", ctx.Guild.IconUrl)
-            .AddField(new("Hinzufügen", $"`{prefix}snippetmanager add <name> <content>`"))
-            .AddField(new("Entfernen", $"`{prefix}snippetmanager remove <name>`"))
-            .AddField(new("Auflisten", $"`{prefix}snippetmanager list`"))
-            .AddField(new("Suchen", $"`{prefix}snippetmanager search <name>`"))
-            .AddField(new("Kürzelsuche", $"`{prefix}snippetmanager shortcutsearch <dein_text>`"))
-            .AddField(new("Hilfe", $"`{prefix}snippetmanager help`"))
+            .AddField(new DiscordEmbedField("Hinzufügen", $"`{prefix}snippetmanager add <name> <content>`"))
+            .AddField(new DiscordEmbedField("Entfernen", $"`{prefix}snippetmanager remove <name>`"))
+            .AddField(new DiscordEmbedField("Auflisten", $"`{prefix}snippetmanager list`"))
+            .AddField(new DiscordEmbedField("Suchen", $"`{prefix}snippetmanager search <name>`"))
+            .AddField(new DiscordEmbedField("Kürzelsuche", $"`{prefix}snippetmanager shortcutsearch <dein_text>`"))
+            .AddField(new DiscordEmbedField("Hilfe", $"`{prefix}snippetmanager help`"))
             .Build();
         await ctx.RespondAsync(eb);
     }
@@ -46,7 +46,8 @@ public class SnippetManagerCommands : BaseCommandModule
         await con.OpenAsync();
 
 
-        await using var checkCmd = new NpgsqlCommand("SELECT EXISTS (SELECT 1 FROM snippets WHERE snip_id = @name)", con);
+        await using var checkCmd =
+            new NpgsqlCommand("SELECT EXISTS (SELECT 1 FROM snippets WHERE snip_id = @name)", con);
         checkCmd.Parameters.AddWithValue("name", name);
         var exists = (bool)await checkCmd.ExecuteScalarAsync();
 
@@ -59,7 +60,8 @@ public class SnippetManagerCommands : BaseCommandModule
             return;
         }
 
-        await using var cmd = new NpgsqlCommand("INSERT INTO snippets (snip_id, snipped_text) VALUES (@name, @content)", con);
+        await using var cmd =
+            new NpgsqlCommand("INSERT INTO snippets (snip_id, snipped_text) VALUES (@name, @content)", con);
         cmd.Parameters.AddWithValue("name", name);
         cmd.Parameters.AddWithValue("content", content);
         await cmd.ExecuteNonQueryAsync();
@@ -92,6 +94,7 @@ public class SnippetManagerCommands : BaseCommandModule
             eb.WithDescription($"Snippet `{name}` existiert nicht!")
                 .WithColor(DiscordColor.Red);
         }
+
         eb.WithFooter("AGC Support-System", ctx.Guild.IconUrl);
         await ctx.RespondAsync(eb.Build());
     }
@@ -136,7 +139,6 @@ public class SnippetManagerCommands : BaseCommandModule
     }
 
 
-
     [Command("search")]
     [RequireStaffRole]
     public async Task SearchSnippets(CommandContext ctx, string snippet_id)
@@ -158,6 +160,7 @@ public class SnippetManagerCommands : BaseCommandModule
         {
             eb.WithDescription("Snippet nicht gefunden!");
         }
+
         await reader.CloseAsync();
         await ctx.RespondAsync(eb.Build());
     }
@@ -180,14 +183,15 @@ public class SnippetManagerCommands : BaseCommandModule
 
         foreach (var word in words)
         {
-            await using var cmd = new NpgsqlCommand("SELECT snip_id, snipped_text FROM snippets WHERE snipped_text ~* @word", con);
+            await using var cmd =
+                new NpgsqlCommand("SELECT snip_id, snipped_text FROM snippets WHERE snipped_text ~* @word", con);
 
             cmd.Parameters.AddWithValue("word", $"\\m{word}\\M");
             await using var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
-                eb.AddField(new(reader.GetString(0), reader.GetString(1)));
+                eb.AddField(new DiscordEmbedField(reader.GetString(0), reader.GetString(1)));
                 snippetFound = true;
             }
 
@@ -202,7 +206,4 @@ public class SnippetManagerCommands : BaseCommandModule
 
         await ctx.RespondAsync(eb.Build());
     }
-
-
-
 }

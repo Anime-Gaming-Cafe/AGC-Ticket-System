@@ -2,5 +2,6 @@
 
 public enum RemoveType
 {
-    Closed, Removed
+    Closed,
+    Removed
 }

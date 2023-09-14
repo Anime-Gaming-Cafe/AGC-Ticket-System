@@ -29,6 +29,7 @@ public class RequireOpenTicket : CheckBaseAttribute
             if (ctx.Member.Roles.Any(r => r.Id == RoleId))
                 await ctx.RespondAsync("Dies ist kein offenes Ticket.");
         }
+
         return openticket;
     }
 }
