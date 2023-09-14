@@ -236,8 +236,6 @@ public class TicketManager
 
         await reader2.CloseAsync();
 
-        var button = new DiscordLinkButtonComponent(
-            "https://discord.com/channels/" + ctx.Guild.Id + "/" + ctx.Channel.Id, "Zum Ticket");
 
         var del_ticketbutton = new DiscordButtonComponent(ButtonStyle.Danger, "ticket_delete", "Ticket löschen ❌");
         var teb = new DiscordEmbedBuilder
@@ -247,7 +245,7 @@ public class TicketManager
                 $"Das Ticket wurde erfolgreich geschlossen!\n Geschlossen von {ctx.User.UsernameWithDiscriminator} ``{ctx.User.Id}``",
             Color = DiscordColor.Green
         };
-
+        var tname = ticket_channel.Name;
         await ticket_channel.ModifyAsync(x => x.Name = $"closed-{ticket_channel.Name}");
         var mb = new DiscordMessageBuilder();
         mb.WithContent(ctx.User.Mention);
@@ -261,7 +259,7 @@ public class TicketManager
             {
                 var member = await ctx.Guild.GetMemberAsync((ulong)user);
                 await TicketManagerHelper.RemoveUserFromTicket(ctx, ticket_channel, member);
-                await TicketManagerHelper.SendTranscriptsToUser(member, transcriptURL);
+                await TicketManagerHelper.SendTranscriptsToUser(member, transcriptURL, RemoveType.Closed, tname);
             }
         }
     }
@@ -357,7 +355,7 @@ public class TicketManager
                 $"Das Ticket wurde erfolgreich geschlossen!\n Geschlossen von {interaction.User.UsernameWithDiscriminator} ``{interaction.User.Id}``",
             Color = DiscordColor.Green
         }.Build();
-
+        var tname = ticket_channel.Name;
         await ticket_channel.ModifyAsync(x => x.Name = $"closed-{ticket_channel.Name}");
         DiscordMessageBuilder mb = new();
         mb.WithContent(interaction.User.Mention);
@@ -371,7 +369,7 @@ public class TicketManager
             {
                 var member = await interaction.Guild.GetMemberAsync((ulong)user);
                 await TicketManagerHelper.RemoveUserFromTicket(interaction.Interaction, ticket_channel, member);
-                await TicketManagerHelper.SendTranscriptsToUser(member, transcriptURL);
+                await TicketManagerHelper.SendTranscriptsToUser(member, transcriptURL, RemoveType.Closed, tname);
             }
         }
     }

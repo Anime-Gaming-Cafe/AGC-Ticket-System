@@ -794,13 +794,9 @@ public class TicketManagerHelper
             await interaction.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(afteraddembed));
 
             var tr = await GenerateTranscript(interaction.Channel);
-
-            var userembed = new DiscordEmbedBuilder
-            {
-                Title = ticket_channel.Name,
-                Description = $"Du wurdest aus dem Ticket ``{ticket_channel.Name}`` entfernt!",
-                Color = DiscordColor.Green
-            };
+            var transcriptURL = await GenerateTranscript(ticket_channel);
+            await SendTranscriptsToUser(member, transcriptURL, RemoveType.Removed,
+                ticket_channel.Name);
         }
     }
 
@@ -919,18 +915,35 @@ public class TicketManagerHelper
         await RemoveUserFromTicket(interaction.Interaction, ticket_channel, member, true);
     }
 
-    public static async Task SendTranscriptsToUser(DiscordMember member, string TransscriptURL)
+    public static async Task SendTranscriptsToUser(DiscordMember member, string TransscriptURL, RemoveType removeType, string ticket_name)
     {
-        var eb = new DiscordEmbedBuilder().WithTitle("Transscript")
-            .WithDescription($"Hier ist dein Transscript: {TransscriptURL}").WithColor(DiscordColor.Blurple);
-        try
+        if (removeType == RemoveType.Closed)
         {
-            if (member.IsBot) return;
-            await member.SendMessageAsync(eb);
+            var eb = new DiscordEmbedBuilder().WithTitle("Transscript")
+                .WithDescription($"Ticket ``{ticket_name}`` wurde geschlossen! \nTranscript: {TransscriptURL}").WithColor(DiscordColor.Blurple);
+            try
+            {
+                if (member.IsBot) return;
+                await member.SendMessageAsync(eb);
+            }
+            catch (Exception)
+            {
+                await Task.CompletedTask;
+            }
         }
-        catch (Exception)
+        else if (removeType == RemoveType.Removed)
         {
-            await Task.CompletedTask;
+            var eb = new DiscordEmbedBuilder().WithTitle("Transscript")
+                .WithDescription($"Du wurdest aus Ticket ``{ticket_name}`` entfernt! \nTranscript: {TransscriptURL}").WithColor(DiscordColor.Blurple);
+            try
+            {
+                if (member.IsBot) return;
+                await member.SendMessageAsync(eb);
+            }
+            catch (Exception)
+            {
+                await Task.CompletedTask;
+            }
         }
     }
 
