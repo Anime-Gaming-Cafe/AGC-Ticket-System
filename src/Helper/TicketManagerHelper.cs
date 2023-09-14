@@ -241,7 +241,7 @@ public class TicketManagerHelper
         int currentHour = DateTime.Now.Hour;
         if (currentHour >= 22 || currentHour <= 8)
         {
-            notes.Add("Aufgrund der Uhrzeit kann es zu Verzögerungen kommen");
+            notes.Add("Aufgrund der Uhrzeit kann es zu Verzögerungen kommen.");
         }
 
         // Check if it's Christmas
@@ -256,7 +256,7 @@ public class TicketManagerHelper
         // Add a general note
         if (!string.IsNullOrEmpty(additionalNotes))
         {
-            additionalNotes = $"NOTE: {additionalNotes} Danke für deine Geduld";
+            additionalNotes = $"\nNOTE: {additionalNotes} Danke für deine Geduld";
         }
 
         return additionalNotes;
