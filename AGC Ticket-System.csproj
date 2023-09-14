@@ -10,12 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DisCatSharp" Version="10.4.2-nightly-020" />
+    <PackageReference Include="DisCatSharp" Version="10.4.2-nightly-021" />
     <PackageReference Include="DisCatSharp.Attributes" Version="10.4.2" />
-    <PackageReference Include="DisCatSharp.CommandsNext" Version="10.4.2-nightly-020" />
-    <PackageReference Include="DisCatSharp.Common" Version="10.4.2-nightly-020" />
-    <PackageReference Include="DisCatSharp.Interactivity" Version="10.4.2-nightly-020" />
-    <PackageReference Include="DisCatSharp.VoiceNext" Version="10.4.2-nightly-020" />
+    <PackageReference Include="DisCatSharp.CommandsNext" Version="10.4.2-nightly-021" />
+    <PackageReference Include="DisCatSharp.Common" Version="10.4.2-nightly-021" />
+    <PackageReference Include="DisCatSharp.Interactivity" Version="10.4.2-nightly-021" />
+    <PackageReference Include="DisCatSharp.VoiceNext" Version="10.4.2-nightly-021" />
     <PackageReference Include="ini-parser-new" Version="2.6.2" />
     <PackageReference Include="Npgsql" Version="8.0.0-preview.4" />
     <PackageReference Include="Serilog" Version="3.0.1" />
