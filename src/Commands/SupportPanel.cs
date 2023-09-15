@@ -66,7 +66,7 @@ public class SupportPanelListener : SupportPanel
                     .WithTitle("Wähle eine Supportkategorie aus")
                     .WithFooter("Wähle bitte die korrekte zu deinem Anliegen zutreffende Kategorie aus!")
                     .WithDescription(
-                        "Wähle unten eine Supportkategorie aus. Dies hilft uns dein Ticket schneller zuzuordnen." +
+                        "Wähle unten eine Supportkategorie aus. Dies hilft uns dein Ticket schneller zuzuordnen. \n" +
                         "Nach Auswahl der Kategorie wird ein Ticket erstellt, bitte schlildere anschließend im Ticket dein Anliegen.\n\n" +
                         "> Report / Melden \n" +
                         "Hier kannst du einen Benutzer melden der gegen Regeln verstößt oder anderweitig auffällt. \n\n" +
