@@ -1028,7 +1028,7 @@ public class TicketManagerHelper
         process.Start();
         ;
         await process.WaitForExitAsync();
-        var baselink = $"https://ticketsystem.animegamingcafe.de/tickets/" + $"{tick}-{id}.html";
+        var baselink = $"https://ticketsystem.animegamingcafe.de/transcripts/" + $"{tick}-{id}.html";
 
         return baselink;
     }
