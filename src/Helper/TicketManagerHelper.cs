@@ -25,9 +25,11 @@ public class TicketManagerHelper
 
     public static async Task<long> GetTicketOwnerFromChannel(DiscordChannel channel)
     {
-        var con = DatabaseService.GetConnection();
+        var new_constr = DatabaseService.GetConnectionString();
+        var newcon = new NpgsqlConnection(new_constr);
+        await newcon.OpenAsync();
         string query = $"SELECT ticket_owner FROM ticketcache where tchannel_id = '{channel.Id}'";
-        await using NpgsqlCommand cmd = new(query, con);
+        await using NpgsqlCommand cmd = new(query, newcon);
         await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
         long ticket_owner = 0;
         while (reader.Read())
@@ -36,6 +38,8 @@ public class TicketManagerHelper
         }
 
         await reader.CloseAsync();
+
+        await newcon.CloseAsync();
 
         return ticket_owner;
     }
