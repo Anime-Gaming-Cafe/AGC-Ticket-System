@@ -4,6 +4,7 @@ using AGC_Ticket.Helpers;
 using AGC_Ticket.Services.DatabaseHandler;
 using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Enums;
+using AGC_Ticket_System.Managers;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
@@ -719,6 +720,31 @@ public class TicketManagerHelper
         return ticket_users_discord;
     }
 
+    public static async Task<List<DiscordUser>> GetTicketUsers(DiscordChannel tchannel, DiscordClient client)
+    {
+        var con = DatabaseService.GetConnection();
+        string query = $"SELECT ticket_users FROM ticketcache where tchannel_id = '{(long)tchannel.Id}'";
+        await using NpgsqlCommand cmd = new(query, con);
+        await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
+        List<long> ticket_users = new();
+        while (reader.Read())
+        {
+            long[] ticketUsersArray = (long[])reader.GetValue(0);
+            ticket_users = new List<long>(ticketUsersArray);
+        }
+
+        await reader.CloseAsync();
+
+        List<DiscordUser> ticket_users_discord = new();
+        foreach (var user in ticket_users)
+        {
+            var u = await client.GetUserAsync((ulong)user);
+            ticket_users_discord.Add(u);
+        }
+
+        return ticket_users_discord;
+    }
+
     public static async Task<List<DiscordUser>> GetTicketUsers(DiscordChannel tchannel)
     {
         var con = DatabaseService.GetConnection();
@@ -787,6 +813,50 @@ public class TicketManagerHelper
         }
     }
 
+
+    public static async Task RemoveUserFromTicket(DiscordChannel ticket_channel,
+        DiscordUser user, DiscordClient client, bool noautomatic = false)
+    {
+        var con = DatabaseService.GetConnection();
+        string query = $"SELECT ticket_id FROM ticketcache where tchannel_id = '{(long)ticket_channel.Id}'";
+        await using NpgsqlCommand cmd = new(query, con);
+        await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
+        string ticket_id = "";
+        while (reader.Read())
+        {
+            ticket_id = reader.GetString(0);
+        }
+
+        await reader.CloseAsync();
+        await using NpgsqlCommand cmd2 =
+            new(
+                $"UPDATE ticketcache SET ticket_users = array_remove(ticket_users, '{(long)user.Id}') WHERE ticket_id = '{ticket_id}'",
+                con);
+        await cmd2.ExecuteNonQueryAsync();
+        var channel = ticket_channel;
+        var member = await client.GetUserAsync(user.Id);
+        //await channel.AddOverwriteAsync(member);
+        if (noautomatic)
+        {
+            var afteraddembed = new DiscordEmbedBuilder
+            {
+                Title = "User entfernt",
+                Description = $"Der User {user.Mention} ``{member.Id}`` wurde vom Ticket entfernt!",
+                Color = DiscordColor.Red
+            };
+            await ticket_channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(afteraddembed));
+
+            var tr = await GenerateTranscript(ticket_channel);
+
+            var userembed = new DiscordEmbedBuilder
+            {
+                Title = ticket_channel.Name,
+                Description = $"Du wurdest aus dem Ticket ``{ticket_channel.Name}`` entfernt!",
+                Color = DiscordColor.Green
+            };
+        }
+    }
+
     public static async Task RemoveUserFromTicket(DiscordInteraction interaction, DiscordChannel ticket_channel,
         DiscordUser user, bool noautomatic = false)
     {
@@ -837,6 +907,53 @@ public class TicketManagerHelper
             await SendTranscriptsToUser(member, transcriptURL, RemoveType.Removed,
                 ticket_channel.Name);
         }
+    }
+
+    public static async Task CloseTicketOnLastUserLeave(DiscordUser user, DiscordClient client)
+    {
+        var ticket_ids = await GetOpenTicketsFromUser(user);
+        foreach (var ticket_id in ticket_ids)
+        {
+            var tchannel_id = await GetTicketChannelFromTicketID(ticket_id);
+            var tchannel = await client.GetChannelAsync((ulong)tchannel_id);
+            var ticket_users = await GetTicketUsers(tchannel, client);
+            if (ticket_users.Count == 1)
+            {
+                await TicketManager.CloseTicket(tchannel, client);
+            }
+        }
+    }
+
+    private static async Task<List<string>> GetOpenTicketsFromUser(DiscordUser user)
+    {
+        var con = DatabaseService.GetConnection();
+        string query = $"SELECT ticket_id FROM ticketcache WHERE ticket_users @> ARRAY[{(long)user.Id}::bigint]";
+        await using NpgsqlCommand cmd = new(query, con);
+        await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
+        List<string> ticket_ids = new();
+        while (reader.Read())
+        {
+            ticket_ids.Add(reader.GetString(0));
+        }
+
+        await reader.CloseAsync();
+        return ticket_ids;
+    }
+
+    private static async Task<long> GetTicketChannelFromTicketID(string ticket_id)
+    {
+        var con = DatabaseService.GetConnection();
+        string query = $"SELECT tchannel_id FROM ticketcache where ticket_id = '{ticket_id}'";
+        await using NpgsqlCommand cmd = new(query, con);
+        await using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync();
+        long tchannel_id = 0;
+        while (reader.Read())
+        {
+            tchannel_id = reader.GetInt64(0);
+        }
+
+        await reader.CloseAsync();
+        return tchannel_id;
     }
 
     public static async Task<bool> CheckIfUserIsInTicket(DiscordInteraction interaction, DiscordChannel ticket_channel,
@@ -1168,5 +1285,18 @@ public class TicketManagerHelper
         eb.WithTimestamp(DateTime.Now);
         var logchannel = ctx.Guild.GetChannel(ulong.Parse(BotConfig.GetConfig()["SupportConfig"]["LogChannelId"]));
         await logchannel.SendMessageAsync(eb);
+    }
+}
+
+[EventHandler]
+public class TicketManagerHelperListener : BaseCommandModule
+{
+    [Event]
+    public static async Task GuildMemberRemoved(DiscordClient client, GuildMemberRemoveEventArgs args)
+    {
+        _ = Task.Run(async () =>
+        {
+            await TicketManagerHelper.CloseTicketOnLastUserLeave(args.Member, client);
+        });
     }
 }
