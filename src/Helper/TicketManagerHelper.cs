@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using AGC_Ticket;
 using AGC_Ticket.Helpers;
 using AGC_Ticket.Services.DatabaseHandler;
@@ -1212,7 +1213,7 @@ public class TicketManagerHelper
         }
 
         await reader.CloseAsync();
-        var cusers = "";
+        var cusers = new StringBuilder();
         var messages = await channel.GetMessagesAsync();
         Dictionary<DiscordUser, int> userMessageCounts = new();
 
@@ -1231,10 +1232,11 @@ public class TicketManagerHelper
 
         foreach (var entry in userMessageCounts)
         {
-            cusers += $"{entry.Key.Mention} ``{entry.Key.Id}`` - {entry.Value}\n";
+            cusers.AppendLine($"{entry.Key.Mention} ``{entry.Key.Id}`` - {entry.Value}");
         }
 
-        eb.AddField(new DiscordEmbedField("Nutzer im Ticket", cusers, true));
+        eb.AddField(new DiscordEmbedField("Nutzer im Ticket", cusers.Length > 0 ? cusers.ToString() : "Keine", true));
+
 
         eb.AddField(new DiscordEmbedField("Ticket URL", $"[Transcript Link]({ticket_url})", true));
         eb.AddField(new DiscordEmbedField("Ticket ID", await GetTicketIdFromChannel(channel), true));
