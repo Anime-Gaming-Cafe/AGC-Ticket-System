@@ -1093,18 +1093,28 @@ public class TicketManagerHelper
         await reader.CloseAsync();
         var cusers = "";
         var messages = await channel.GetMessagesAsync();
-        HashSet<DiscordUser> userSet = new();
+        Dictionary<DiscordUser, int> userMessageCounts = new();
+
         foreach (var message in messages)
         {
-            userSet.Add(message.Author);
+            if (message.Author == messages[0].Author) continue;
+            if (userMessageCounts.ContainsKey(message.Author))
+            {
+                userMessageCounts[message.Author]++;
+            }
+            else
+            {
+                userMessageCounts[message.Author] = 1;
+            }
         }
 
-        foreach (var user in userSet)
+        foreach (var entry in userMessageCounts)
         {
-            cusers += $"{user.Mention} ``{user.Id}``\n";
+            cusers += $"{entry.Key.Mention} ``{entry.Key.Id}`` - {entry.Value}\n";
         }
 
         eb.AddField(new DiscordEmbedField("Nutzer im Ticket", cusers, true));
+
         eb.AddField(new DiscordEmbedField("Ticket URL", $"[Transcript Link]({ticket_url})", true));
         eb.AddField(new DiscordEmbedField("Ticket ID", await GetTicketIdFromChannel(channel), true));
         eb.AddField(new DiscordEmbedField("Staff", staff, true));
