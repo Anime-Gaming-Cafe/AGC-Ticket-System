@@ -1,6 +1,8 @@
-﻿using AGC_Ticket_System.Managers;
+﻿using AGC_Ticket_System.Helper;
+using AGC_Ticket_System.Managers;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
+using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 
@@ -65,6 +67,14 @@ public class TicketManagerEventHandler : BaseCommandModule
             else if (e.Interaction.Data.CustomId == "generatetranscript")
             {
                 await TicketManagerHelper.GenerateTranscriptButton(e.Interaction);
+            }
+            else if (e.Interaction.Data.CustomId == "ticket_snippets")
+            {
+                await TicketManagerHelper.RenderSnippetSelector(e.Interaction);
+            }
+            else if (e.Interaction.Data.CustomId.StartsWith("snippet_selector_"))
+            {
+                await SnippetManagerHelper.SendSnippetAsync(e.Interaction);
             }
 
             return Task.CompletedTask;

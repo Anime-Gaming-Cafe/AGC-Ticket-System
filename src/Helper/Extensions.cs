@@ -17,4 +17,17 @@ internal static class Extensions
             return null;
         }
     }
+    
+    /// <summary>
+    /// Truncates a string to a maximum length.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="maxLength"></param>
+    /// <returns>string</returns>
+    public static string Truncate(this string value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value)) return value;  // Return original value if it's null or empty
+        return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+    }
+
 }
