@@ -635,7 +635,14 @@ public class TicketManagerHelper
     public static async Task RenderSnippetSelector(DiscordInteraction interaction)
     {
         var snippets = await SnippetManagerHelper.GetAllSnippetsAsync();
-
+        
+        if (snippets.Count == 0)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Es sind keine Snippets vorhanden!").AsEphemeral());
+            return;
+        }
+        
         var chunkedSnippets = new List<List<(string snipId, string snippedText)>>();
         for (int i = 0; i < snippets.Count; i += 25)
         {
