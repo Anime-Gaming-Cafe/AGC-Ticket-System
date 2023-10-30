@@ -1,4 +1,8 @@
-﻿using AGC_Ticket.Services.DatabaseHandler;
+﻿#region
+
+using AGC_Ticket.Services.DatabaseHandler;
+
+#endregion
 
 namespace AGC_Ticket_System.Components;
 

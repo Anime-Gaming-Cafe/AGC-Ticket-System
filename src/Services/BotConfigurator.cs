@@ -1,7 +1,11 @@
-﻿using AGC_Ticket.Helpers;
+﻿#region
+
+using AGC_Ticket.Helpers;
 using DisCatSharp.Entities;
 using IniParser;
 using IniParser.Model;
+
+#endregion
 
 namespace AGC_Ticket;
 

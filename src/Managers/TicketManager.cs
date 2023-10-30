@@ -1,14 +1,18 @@
-﻿using AGC_Ticket;
-using AGC_Ticket.Helpers;
-using AGC_Ticket.Services.DatabaseHandler;
+﻿#region
+
+using AGC_Ticket;
 using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Enums;
+using AGC_Ticket.Helpers;
+using AGC_Ticket.Services.DatabaseHandler;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using Npgsql;
+
+#endregion
 
 namespace AGC_Ticket_System.Managers;
 
@@ -263,7 +267,6 @@ public class TicketManager
             }
         }
     }
-
 
 
     public static async Task CloseTicket(DiscordChannel ticket_channel, DiscordClient client)

@@ -1,9 +1,13 @@
-﻿using AGC_Ticket;
+﻿#region
+
+using AGC_Ticket;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
+
+#endregion
 
 namespace AGC_Ticket_System.Eventlistener;
 

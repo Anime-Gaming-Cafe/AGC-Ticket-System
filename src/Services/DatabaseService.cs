@@ -1,5 +1,9 @@
-﻿using System.Data;
+﻿#region
+
+using System.Data;
 using Npgsql;
+
+#endregion
 
 namespace AGC_Ticket.Services.DatabaseHandler;
 

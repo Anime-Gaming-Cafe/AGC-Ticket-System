@@ -1,5 +1,9 @@
-﻿using DisCatSharp.Entities;
+﻿#region
+
+using DisCatSharp.Entities;
 using DisCatSharp.Enums;
+
+#endregion
 
 namespace AGC_Ticket_System.Components;
 

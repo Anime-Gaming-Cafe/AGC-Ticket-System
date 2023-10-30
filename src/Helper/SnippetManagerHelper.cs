@@ -1,7 +1,11 @@
-﻿using AGC_Ticket.Services.DatabaseHandler;
+﻿#region
+
+using AGC_Ticket.Services.DatabaseHandler;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using Npgsql;
+
+#endregion
 
 namespace AGC_Ticket_System.Helper;
 
@@ -32,12 +36,10 @@ public class SnippetManagerHelper
 
     public static async Task SendSnippetAsync(DiscordInteraction e)
     {
-        // ack 
-        Console.WriteLine("Snippet gesendet!");
         var irb = new DiscordInteractionResponseBuilder();
         irb.WithContent("Sende snippet...");
         await e.CreateResponseAsync(InteractionResponseType.UpdateMessage, irb);
-        var snipId = e.Data.Values[0].ToString();
+        var snipId = e.Data.Values[0];
         var snippet = await GetSnippetAsync(snipId);
         if (string.IsNullOrEmpty(snippet))
         {
@@ -62,9 +64,8 @@ public class SnippetManagerHelper
         nrb.WithContent("Snippet gesendet!");
         await e.EditOriginalResponseAsync(nrb);
     }
-    
-    
-    
+
+
     public static async Task<List<(string snipId, string snippedText)>> GetAllSnippetsAsync()
     {
         var newcon = DatabaseService.GetConnectionString();
@@ -86,6 +87,4 @@ public class SnippetManagerHelper
 
         return resultList;
     }
-
-    
 }

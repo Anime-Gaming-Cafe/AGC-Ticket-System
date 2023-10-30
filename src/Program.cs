@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿#region
+
+using System.Reflection;
 using AGC_Ticket;
 using AGC_Ticket.Services.DatabaseHandler;
 using DisCatSharp;
@@ -14,6 +16,8 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using Serilog;
 using ILogger = Serilog.ILogger;
+
+#endregion
 
 internal class Program : BaseCommandModule
 {

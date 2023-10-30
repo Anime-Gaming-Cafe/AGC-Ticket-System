@@ -1,4 +1,6 @@
-﻿using AGC_Ticket;
+﻿#region
+
+using AGC_Ticket;
 using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Enums;
 using AGC_Ticket_System.Managers;
@@ -8,6 +10,8 @@ using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
+
+#endregion
 
 namespace AGC_Ticket_System.Commands;
 

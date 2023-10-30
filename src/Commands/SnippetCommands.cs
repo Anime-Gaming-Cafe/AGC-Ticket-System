@@ -1,10 +1,14 @@
-﻿using System.Text;
+﻿#region
+
+using System.Text;
 using System.Text.RegularExpressions;
 using AGC_Ticket.Services.DatabaseHandler;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
 using Npgsql;
+
+#endregion
 
 namespace AGC_Ticket_System.Commands;
 
