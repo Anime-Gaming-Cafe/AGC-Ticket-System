@@ -1,6 +1,10 @@
-﻿using AGC_Ticket;
+﻿#region
+
+using AGC_Ticket;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
+
+#endregion
 
 public class RequireStaffRole : CheckBaseAttribute
 {

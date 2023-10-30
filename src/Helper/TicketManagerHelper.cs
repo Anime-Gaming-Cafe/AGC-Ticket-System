@@ -1,11 +1,14 @@
-﻿using System.Diagnostics;
+﻿#region
+
+using System.Diagnostics;
 using System.Text;
 using AGC_Ticket;
-using AGC_Ticket.Helpers;
-using AGC_Ticket.Services.DatabaseHandler;
 using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Enums;
+using AGC_Ticket_System.Helper;
 using AGC_Ticket_System.Managers;
+using AGC_Ticket.Helpers;
+using AGC_Ticket.Services.DatabaseHandler;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.Entities;
@@ -13,6 +16,8 @@ using DisCatSharp.Enums;
 using DisCatSharp.EventArgs;
 using DisCatSharp.Interactivity.Extensions;
 using Npgsql;
+
+#endregion
 
 public class TicketManagerHelper
 {
@@ -193,7 +198,6 @@ public class TicketManagerHelper
         {
             if (ticketCreator == TicketCreator.User)
             {
-                Console.WriteLine(0);
                 var ticket_channel = tchannel;
                 int prev_tickets = await GetTicketCountFromThisUser((long)interaction.User.Id);
                 var eb = new DiscordEmbedBuilder()
@@ -622,11 +626,56 @@ public class TicketManagerHelper
         var generatetranscript =
             new DiscordButtonComponent(ButtonStyle.Primary, "generatetranscript", "Transcript erzeugen");
         buttons.Add(generatetranscript);
+        var sendsnip =
+            new DiscordButtonComponent(ButtonStyle.Primary, "ticket_snippets", "Snippet senden");
+        buttons.Add(sendsnip);
         // render
         var imb = new DiscordInteractionResponseBuilder().AddComponents(buttons).AsEphemeral();
         await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
             imb);
     }
+
+    public static async Task RenderSnippetSelector(DiscordInteraction interaction)
+    {
+        var snippets = await SnippetManagerHelper.GetAllSnippetsAsync();
+
+        if (snippets.Count == 0)
+        {
+            await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Es sind keine Snippets vorhanden!").AsEphemeral());
+            return;
+        }
+
+        var chunkedSnippets = new List<List<(string snipId, string snippedText)>>();
+        for (int i = 0; i < snippets.Count; i += 25)
+        {
+            chunkedSnippets.Add(snippets.Skip(i).Take(25).ToList());
+        }
+
+        var irb = new DiscordInteractionResponseBuilder();
+        irb.WithContent("Wähle einen Snippet aus.");
+
+        foreach (var snippetChunk in chunkedSnippets)
+        {
+            var options = new List<DiscordStringSelectComponentOption>();
+
+            foreach (var snippet in snippetChunk)
+            {
+                options.Add(new DiscordStringSelectComponentOption(snippet.snipId, snippet.snipId,
+                    snippet.snippedText.Truncate(80)));
+            }
+
+            var selector = new DiscordStringSelectComponent(
+                $"Wähle einen Snippet {chunkedSnippets.IndexOf(snippetChunk) + 1}",
+                $"Wähle einen Snippet {chunkedSnippets.IndexOf(snippetChunk) + 1}",
+                options, maxOptions: 1, minOptions: 1,
+                customId: $"snippet_selector_{chunkedSnippets.IndexOf(snippetChunk) + 1}");
+            irb.AddComponents(selector).AsEphemeral();
+        }
+
+        await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, irb);
+    }
+
 
     public static async Task GenerateTranscriptButton(DiscordInteraction interaction)
     {
@@ -681,7 +730,6 @@ public class TicketManagerHelper
         var rolemention = toprole?.Mention ?? "Keine Rolle";
         // get prev ticketcount
         var prev_tickets = await GetTicketCountFromThisUser((long)member.Id) - 1;
-        Console.WriteLine(12);
         var voicestate = member.VoiceState;
         // generate embed
         var eb = new DiscordEmbedBuilder()
@@ -1300,9 +1348,6 @@ public class TicketManagerHelperListener : BaseCommandModule
     [Event]
     public static async Task GuildMemberRemoved(DiscordClient client, GuildMemberRemoveEventArgs args)
     {
-        _ = Task.Run(async () =>
-        {
-            await TicketManagerHelper.CloseTicketOnLastUserLeave(args.Member, client);
-        });
+        _ = Task.Run(async () => { await TicketManagerHelper.CloseTicketOnLastUserLeave(args.Member, client); });
     }
 }
