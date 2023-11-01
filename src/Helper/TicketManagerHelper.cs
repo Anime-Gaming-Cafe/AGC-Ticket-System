@@ -600,41 +600,6 @@ public class TicketManagerHelper
             $"Transcript wurde in die Datenbank eingetragen bei {user.UsernameWithDiscriminator} ``{user.Id}`` eingetragen!"));
     }
 
-    public static async Task RenderMore(InteractionCreateEventArgs interactionCreateEvent)
-    {
-        // check if team
-        var teamler =
-            TeamChecker.IsSupporter(
-                await interactionCreateEvent.Interaction.User.ConvertToMember(interactionCreateEvent.Interaction
-                    .Guild));
-        if (!teamler)
-        {
-            await interactionCreateEvent.Interaction.CreateResponseAsync(
-                InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
-            return;
-        }
-
-        var buttons = new List<DiscordButtonComponent>();
-        // userinfo button
-        var userinfo = new DiscordButtonComponent(ButtonStyle.Primary, "ticket_userinfo", "Userinfo");
-        buttons.Add(userinfo);
-        // flag transcript button
-        var flagtranscript =
-            new DiscordButtonComponent(ButtonStyle.Primary, "ticket_flagtranscript", "Transcript Flaggen");
-        buttons.Add(flagtranscript);
-        var generatetranscript =
-            new DiscordButtonComponent(ButtonStyle.Primary, "generatetranscript", "Transcript erzeugen");
-        buttons.Add(generatetranscript);
-        var sendsnip =
-            new DiscordButtonComponent(ButtonStyle.Primary, "ticket_snippets", "Snippet senden");
-        buttons.Add(sendsnip);
-        // render
-        var imb = new DiscordInteractionResponseBuilder().AddComponents(buttons).AsEphemeral();
-        await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-            imb);
-    }
-
     public static async Task RenderSnippetSelector(DiscordInteraction interaction)
     {
         var snippets = await SnippetManagerHelper.GetAllSnippetsAsync();

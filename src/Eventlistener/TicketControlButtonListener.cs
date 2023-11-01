@@ -1,5 +1,6 @@
 ﻿#region
 
+using AGC_Ticket_System.Components;
 using AGC_Ticket_System.Helper;
 using AGC_Ticket_System.Managers;
 using DisCatSharp;
@@ -50,7 +51,7 @@ public class TicketManagerEventHandler : BaseCommandModule
             }
             else if (cid == "ticket_more")
             {
-                await TicketManagerHelper.RenderMore(e);
+                await TicketComponents.RenderMore(e);
             }
             else if (cid == "ticket_userinfo")
             {
@@ -80,6 +81,7 @@ public class TicketManagerEventHandler : BaseCommandModule
             {
                 await SnippetManagerHelper.SendSnippetAsync(e.Interaction);
             }
+
 
             return Task.CompletedTask;
         });

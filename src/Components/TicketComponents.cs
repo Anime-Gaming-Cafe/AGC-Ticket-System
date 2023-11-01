@@ -1,7 +1,9 @@
 ﻿#region
 
+using AGC_Ticket.Helpers;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
+using DisCatSharp.EventArgs;
 
 #endregion
 
@@ -59,4 +61,30 @@ public class TicketComponents
         };
         return buttons;
     }
+    
+    public static async Task RenderMore(InteractionCreateEventArgs interactionCreateEvent)
+    {
+        var user = await interactionCreateEvent.Interaction.User.ConvertToMember(interactionCreateEvent.Interaction.Guild);
+
+        if (!TeamChecker.IsSupporter(user))
+        {
+            await interactionCreateEvent.Interaction.CreateResponseAsync(
+                InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
+            return;
+        }
+
+        var buttons = new List<DiscordButtonComponent>
+        {
+            new DiscordButtonComponent(ButtonStyle.Primary, "ticket_userinfo", "Userinfo"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "ticket_flagtranscript", "Transcript Flaggen"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "generatetranscript", "Transcript erzeugen"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "ticket_snippets", "Snippet senden"),
+            new DiscordButtonComponent(ButtonStyle.Success, "manage_notification", "Benachr. verwalten")
+        };
+
+        var responseBuilder = new DiscordInteractionResponseBuilder().AddComponents(buttons).AsEphemeral();
+        await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, responseBuilder);
+    }
+
 }
