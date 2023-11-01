@@ -173,6 +173,7 @@ public class TicketManager
     public static async Task CloseTicket(CommandContext ctx, DiscordChannel ticket_channel)
     {
         // fetch first message of this channel
+        await NotificationManager.ClearMode(ticket_channel.Id);
         var channelmessages = await ctx.Channel.GetMessagesAsync();
         var message = channelmessages.LastOrDefault();
         var umb = new DiscordMessageBuilder();
@@ -272,6 +273,7 @@ public class TicketManager
     public static async Task CloseTicket(DiscordChannel ticket_channel, DiscordClient client)
     {
         // fetch first message of this channel
+        await NotificationManager.ClearMode(ticket_channel.Id);
         var channelmessages = await ticket_channel.GetMessagesAsync();
         var message = channelmessages.LastOrDefault();
         var umb = new DiscordMessageBuilder();

@@ -38,6 +38,17 @@ public class NotificationManager
         await cmd.ExecuteNonQueryAsync();
     }
 
+    public static async Task ClearMode(ulong channel_id)
+    {
+        long cid = (long)channel_id;
+        var constring = DatabaseService.GetConnectionString();
+        await using var con = new NpgsqlConnection(constring);
+        await con.OpenAsync();
+        await using var cmd = new NpgsqlCommand("DELETE FROM subscriptions WHERE channel_id = @cid", con);
+        cmd.Parameters.AddWithValue("cid", cid);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
     public static async Task<NotificationMode> GetCurrentMode(ulong channel_id, ulong user_id)
     {
         long cid = (long)channel_id;
