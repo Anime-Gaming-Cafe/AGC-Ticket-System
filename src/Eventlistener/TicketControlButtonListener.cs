@@ -86,7 +86,7 @@ public class TicketManagerEventHandler : BaseCommandModule
             }
             else if (cid.StartsWith("enable_noti_mode"))
             {
-                await NotificationManager.RenderNotificationManager(e.Interaction);
+                await NotificationManager.ChangeMode(e.Interaction);
             }
             else if (cid == "manage_notification")
             {

@@ -14,6 +14,7 @@ public class NotificationManager
     {
         long cid = (long)channel_id;
         long uid = (long)user_id;
+        await RemoveMode(channel_id, user_id);
         var constring = DatabaseService.GetConnectionString();
         await using var con = new NpgsqlConnection(constring);
         await con.OpenAsync();
@@ -68,7 +69,7 @@ public class NotificationManager
         }
         else
         {
-            return TicketComponents.GetNotificationManagerButtons();
+            return TicketComponents.GetNotificationManagerButtonsEnabledNotify();
         }
     }
 
@@ -88,6 +89,67 @@ public class NotificationManager
         irb.AddEmbed(new DiscordEmbedBuilder().WithColor(DiscordColor.Blurple).WithDescription(content.ToString()));
         irb.AddComponents(rows).AsEphemeral();
         await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, irb);
+    }
+    
+    public static async Task RenderNotificationManagerWithUpdate(DiscordInteraction interaction)
+    {
+        var customid = interaction.Data.CustomId;
+        NotificationMode mode = await GetCurrentMode(interaction.Channel.Id, interaction.User.Id);
+        string enabled = mode != NotificationMode.Disabled ? "✅" : "❌";
+
+        StringBuilder content = new StringBuilder();
+        content.Append($"**Benachrichtigungen für <#{interaction.Channel.Id}> / <@{interaction.User.Id}>**");
+        content.Append("\n\n");
+        content.Append($"**Status:** {enabled}\n");
+        content.Append($"**Gesetzter Modus:** {mode}");
+        var rows = GetPhase1Row(mode);
+        var irb = new DiscordInteractionResponseBuilder();
+        irb.AddEmbed(new DiscordEmbedBuilder().WithColor(DiscordColor.Blurple).WithDescription(content.ToString()));
+        irb.AddComponents(rows).AsEphemeral();
+        await interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, irb);
+    }
+    
+
+    public static async Task ChangeMode(DiscordInteraction interaction)
+    {
+        var customid = interaction.Data.CustomId;
+        Console.WriteLine(customid == "enable_noti_mode1");
+        if (customid == "disable_notification")
+        {
+            await RemoveMode(interaction.Channel.Id, interaction.User.Id);
+            await RenderNotificationManagerWithUpdate(interaction);
+        }
+        else if (customid == "enable_noti_mode1")
+        {
+            Console.WriteLine("SetMode");
+            await SetMode(NotificationMode.OnceMention, interaction.Channel.Id, interaction.User.Id);
+            await RenderNotificationManagerWithUpdate(interaction);
+        }
+        else if (customid == "enable_noti_mode2")
+        {
+            await SetMode(NotificationMode.OnceDM, interaction.Channel.Id, interaction.User.Id);
+            await RenderNotificationManagerWithUpdate(interaction);
+        }
+        else if (customid == "enable_noti_mode3")
+        {
+            await SetMode(NotificationMode.OnceBoth, interaction.Channel.Id, interaction.User.Id);
+            await RenderNotificationManagerWithUpdate(interaction);
+        }
+        else if (customid == "enable_noti_mode4")
+        {
+            await SetMode(NotificationMode.AlwaysMention, interaction.Channel.Id, interaction.User.Id);
+            await RenderNotificationManagerWithUpdate(interaction);
+        }
+        else if (customid == "enable_noti_mode5")
+        {
+            await SetMode(NotificationMode.AlwaysDM, interaction.Channel.Id, interaction.User.Id);
+            await RenderNotificationManagerWithUpdate(interaction);
+        }
+        else if (customid == "enable_noti_mode6")
+        {
+            await SetMode(NotificationMode.AlwaysBoth, interaction.Channel.Id, interaction.User.Id);
+            await RenderNotificationManagerWithUpdate(interaction);
+        }
     }
     
 }
