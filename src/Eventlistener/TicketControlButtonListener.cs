@@ -84,7 +84,7 @@ public class TicketManagerEventHandler : BaseCommandModule
             {
                 await SnippetManagerHelper.SendSnippetAsync(e.Interaction);
             }
-            else if (cid.StartsWith("enable_noti_mode"))
+            else if (cid.StartsWith("enable_noti_mode") || cid == "disable_notification")
             {
                 await NotificationManager.ChangeMode(e.Interaction);
             }
