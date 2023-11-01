@@ -21,9 +21,6 @@ public class TicketManagerEventHandler : BaseCommandModule
         _ = Task.Run(async () =>
         {
             string cid = e.Interaction.Data.CustomId;
-            #if DEBUG
-            Console.WriteLine($"[DEBUG] Component Interaction: {cid}");
-            #endif
             if (cid == "ticket_claim")
             {
                 await TicketManagerHelper.ClaimTicket(e);

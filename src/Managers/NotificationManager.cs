@@ -79,6 +79,29 @@ public class NotificationManager
         cmd.Parameters.AddWithValue("cid", cid);
         await cmd.ExecuteNonQueryAsync();
     }
+    
+    public static string GetModeString(NotificationMode mode)
+    {
+        switch (mode)
+        {
+            case NotificationMode.Disabled:
+                return "Deaktiviert";
+            case NotificationMode.OnceMention:
+                return "Einmalig Erwähnen";
+            case NotificationMode.OnceDM:
+                return "Einmalig DM";
+            case NotificationMode.OnceBoth:
+                return "Einmalig Beides";
+            case NotificationMode.AlwaysMention:
+                return "Immer Erwähnen";
+            case NotificationMode.AlwaysDM:
+                return "Immer DM";
+            case NotificationMode.AlwaysBoth:
+                return "Immer Beides";
+            default:
+                return "Unbekannt";
+        }
+    }
 
     public static async Task<NotificationMode> GetCurrentMode(ulong channel_id, ulong user_id)
     {
@@ -120,12 +143,13 @@ public class NotificationManager
         var customid = interaction.Data.CustomId;
         NotificationMode mode = await GetCurrentMode(interaction.Channel.Id, interaction.User.Id);
         string enabled = mode != NotificationMode.Disabled ? "✅" : "❌";
+        string modestr = GetModeString(mode);
 
         StringBuilder content = new StringBuilder();
         content.Append($"**Benachrichtigungen für <#{interaction.Channel.Id}> / <@{interaction.User.Id}>**");
         content.Append("\n\n");
-        content.Append($"**Status:** {enabled}\n");
-        content.Append($"**Gesetzter Modus:** {mode}");
+        content.Append($"**Aktiv:** {enabled}\n");
+        content.Append($"**Gesetzter Modus:** {modestr}");
         var rows = GetPhase1Row(mode);
         var irb = new DiscordInteractionResponseBuilder();
         irb.AddEmbed(new DiscordEmbedBuilder().WithColor(DiscordColor.Blurple).WithDescription(content.ToString()));
@@ -138,12 +162,13 @@ public class NotificationManager
         var customid = interaction.Data.CustomId;
         NotificationMode mode = await GetCurrentMode(interaction.Channel.Id, interaction.User.Id);
         string enabled = mode != NotificationMode.Disabled ? "✅" : "❌";
+        string modestr = GetModeString(mode);
 
         StringBuilder content = new StringBuilder();
         content.Append($"**Benachrichtigungen für <#{interaction.Channel.Id}> / <@{interaction.User.Id}>**");
         content.Append("\n\n");
-        content.Append($"**Status:** {enabled}\n");
-        content.Append($"**Gesetzter Modus:** {mode}");
+        content.Append($"**Aktiv:** {enabled}\n");
+        content.Append($"**Gesetzter Modus:** {modestr}");
         var rows = GetPhase1Row(mode);
         var irb = new DiscordInteractionResponseBuilder();
         irb.AddEmbed(new DiscordEmbedBuilder().WithColor(DiscordColor.Blurple).WithDescription(content.ToString()));
