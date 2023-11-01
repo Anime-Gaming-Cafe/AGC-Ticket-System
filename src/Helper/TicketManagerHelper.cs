@@ -331,6 +331,7 @@ public class TicketManagerHelper
         imsgmb.WithEmbed(imsg.Embeds[0]);
         imsgmb.AddComponents(del_ticketbutton);
         await imsg.ModifyAsync(imsgmb);
+        await NotificationManager.ClearMode(interaction.Channel.Id);
         DiscordEmbed ebct = new DiscordEmbedBuilder()
             .WithTitle("Ticket wird gelöscht")
             .WithDescription(
