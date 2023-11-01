@@ -499,7 +499,6 @@ public class TicketManagerHelper
                 Description = $"Der User {user.Mention} ``{user.Id}`` wurde zum Ticket hinzugefügt!",
                 Color = DiscordColor.Green
             };
-            ;
             var mb = new DiscordMessageBuilder().WithContent(user.Mention + " wurde zum Ticket hinzugefügt.")
                 .AddEmbed(afteraddembed);
             await interaction.Channel.SendMessageAsync(mb);
@@ -1161,7 +1160,7 @@ public class TicketManagerHelper
         var process = new Process();
         process.StartInfo = psi;
         process.Start();
-        ;
+
         await process.WaitForExitAsync();
         var baselink = $"https://ticketsystem.animegamingcafe.de/transcripts/" + $"{tick}-{id}.html";
 
