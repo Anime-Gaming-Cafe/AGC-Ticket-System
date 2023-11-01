@@ -101,9 +101,10 @@ public class TicketComponents
         };
         var actionRows = new List<DiscordActionRowComponent>
         {
-            new DiscordActionRowComponent(buttons.GetRange(0, 5)),
-            new DiscordActionRowComponent(buttons.GetRange(5, 5)),
-            new DiscordActionRowComponent(buttons.GetRange(10, 5))
+        new DiscordActionRowComponent(new List<DiscordButtonComponent> { buttons[0] }),
+        new DiscordActionRowComponent(buttons.GetRange(1, 3)),
+        new DiscordActionRowComponent(buttons.GetRange(4, 3))
+
         };
         return actionRows;
     }
@@ -122,9 +123,10 @@ public class TicketComponents
         };
         var actionRows = new List<DiscordActionRowComponent>
         {
-            new DiscordActionRowComponent(buttons.GetRange(0, 5)),
-            new DiscordActionRowComponent(buttons.GetRange(5, 5)),
-            new DiscordActionRowComponent(buttons.GetRange(10, 5))
+        new DiscordActionRowComponent(new List<DiscordButtonComponent> { buttons[0] }),
+        new DiscordActionRowComponent(buttons.GetRange(1, 3)),
+        new DiscordActionRowComponent(buttons.GetRange(4, 3))
+
         };
         return actionRows;
     }

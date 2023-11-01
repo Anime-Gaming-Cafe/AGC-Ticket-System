@@ -21,6 +21,9 @@ public class TicketManagerEventHandler : BaseCommandModule
         _ = Task.Run(async () =>
         {
             string cid = e.Interaction.Data.CustomId;
+            #if DEBUG
+            Console.WriteLine($"[DEBUG] Component Interaction: {cid}");
+            #endif
             if (cid == "ticket_claim")
             {
                 await TicketManagerHelper.ClaimTicket(e);
@@ -83,7 +86,11 @@ public class TicketManagerEventHandler : BaseCommandModule
             }
             else if (cid.StartsWith("enable_noti_mode"))
             {
-                
+                await NotificationManager.RenderNotificationManager(e.Interaction);
+            }
+            else if (cid == "manage_notification")
+            {
+                await NotificationManager.RenderNotificationManager(e.Interaction);
             }
 
             return Task.CompletedTask;

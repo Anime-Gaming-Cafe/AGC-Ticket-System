@@ -1,6 +1,9 @@
-﻿using AGC_Ticket_System.Enums;
+﻿using System.Text;
+using AGC_Ticket_System.Components;
+using AGC_Ticket_System.Enums;
 using AGC_Ticket.Services.DatabaseHandler;
 using DisCatSharp.Entities;
+using DisCatSharp.Enums;
 using Npgsql;
 
 namespace AGC_Ticket_System.Managers;
@@ -33,4 +36,58 @@ public class NotificationManager
         cmd.Parameters.AddWithValue("cid", cid);
         await cmd.ExecuteNonQueryAsync();
     }
+
+    public static async Task<NotificationMode> GetCurrentMode(ulong channel_id, ulong user_id)
+    {
+        long cid = (long)channel_id;
+        long uid = (long)user_id;
+        var constring = DatabaseService.GetConnectionString();
+        await using var con = new NpgsqlConnection(constring);
+        await con.OpenAsync();
+        await using var cmd = new NpgsqlCommand("SELECT mode FROM subscriptions WHERE user_id = @uid AND channel_id = @cid", con);
+        cmd.Parameters.AddWithValue("uid", uid);
+        cmd.Parameters.AddWithValue("cid", cid);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (reader.HasRows)
+        {
+            await reader.ReadAsync();
+            return (NotificationMode)reader.GetInt32(0);
+        }
+        else
+        {
+            return NotificationMode.Disabled;
+        }
+        
+    }
+
+    private static List<DiscordActionRowComponent> GetPhase1Row(NotificationMode mode)
+    {
+        if (mode == NotificationMode.Disabled)
+        {
+            return TicketComponents.GetNotificationManagerButtons();
+        }
+        else
+        {
+            return TicketComponents.GetNotificationManagerButtons();
+        }
+    }
+
+    public static async Task RenderNotificationManager(DiscordInteraction interaction)
+    {
+        var customid = interaction.Data.CustomId;
+        NotificationMode mode = await GetCurrentMode(interaction.Channel.Id, interaction.User.Id);
+        string enabled = mode != NotificationMode.Disabled ? "✅" : "❌";
+
+        StringBuilder content = new StringBuilder();
+        content.Append($"**Benachrichtigungen für <#{interaction.Channel.Id}> / <@{interaction.User.Id}>**");
+        content.Append("\n\n");
+        content.Append($"**Status:** {enabled}\n");
+        content.Append($"**Gesetzter Modus:** {mode}");
+        var rows = GetPhase1Row(mode);
+        var irb = new DiscordInteractionResponseBuilder();
+        irb.AddEmbed(new DiscordEmbedBuilder().WithColor(DiscordColor.Blurple).WithDescription(content.ToString()));
+        irb.AddComponents(rows).AsEphemeral();
+        await interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, irb);
+    }
+    
 }
