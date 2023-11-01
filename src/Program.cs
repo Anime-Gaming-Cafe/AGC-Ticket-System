@@ -84,6 +84,7 @@ internal class Program : BaseCommandModule
         await discord.ConnectAsync();
 
         await StartTasks(discord);
+        CurrentApplicationData.Client = discord;
         await Task.Delay(-1);
     }
 
@@ -159,6 +160,11 @@ internal class Program : BaseCommandModule
 
         return Task.CompletedTask;
     }
+}
+
+public class CurrentApplicationData
+{
+    public static DiscordClient Client { get; set; }
 }
 
 public static class GlobalProperties

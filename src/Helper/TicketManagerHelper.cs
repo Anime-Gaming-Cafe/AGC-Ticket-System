@@ -499,7 +499,6 @@ public class TicketManagerHelper
                 Description = $"Der User {user.Mention} ``{user.Id}`` wurde zum Ticket hinzugefügt!",
                 Color = DiscordColor.Green
             };
-            ;
             var mb = new DiscordMessageBuilder().WithContent(user.Mention + " wurde zum Ticket hinzugefügt.")
                 .AddEmbed(afteraddembed);
             await interaction.Channel.SendMessageAsync(mb);
@@ -598,41 +597,6 @@ public class TicketManagerHelper
         await con.CloseAsync();
         await interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(
             $"Transcript wurde in die Datenbank eingetragen bei {user.UsernameWithDiscriminator} ``{user.Id}`` eingetragen!"));
-    }
-
-    public static async Task RenderMore(InteractionCreateEventArgs interactionCreateEvent)
-    {
-        // check if team
-        var teamler =
-            TeamChecker.IsSupporter(
-                await interactionCreateEvent.Interaction.User.ConvertToMember(interactionCreateEvent.Interaction
-                    .Guild));
-        if (!teamler)
-        {
-            await interactionCreateEvent.Interaction.CreateResponseAsync(
-                InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent("Du bist kein Teammitglied!").AsEphemeral());
-            return;
-        }
-
-        var buttons = new List<DiscordButtonComponent>();
-        // userinfo button
-        var userinfo = new DiscordButtonComponent(ButtonStyle.Primary, "ticket_userinfo", "Userinfo");
-        buttons.Add(userinfo);
-        // flag transcript button
-        var flagtranscript =
-            new DiscordButtonComponent(ButtonStyle.Primary, "ticket_flagtranscript", "Transcript Flaggen");
-        buttons.Add(flagtranscript);
-        var generatetranscript =
-            new DiscordButtonComponent(ButtonStyle.Primary, "generatetranscript", "Transcript erzeugen");
-        buttons.Add(generatetranscript);
-        var sendsnip =
-            new DiscordButtonComponent(ButtonStyle.Primary, "ticket_snippets", "Snippet senden");
-        buttons.Add(sendsnip);
-        // render
-        var imb = new DiscordInteractionResponseBuilder().AddComponents(buttons).AsEphemeral();
-        await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-            imb);
     }
 
     public static async Task RenderSnippetSelector(DiscordInteraction interaction)
@@ -1196,7 +1160,7 @@ public class TicketManagerHelper
         var process = new Process();
         process.StartInfo = psi;
         process.Start();
-        ;
+
         await process.WaitForExitAsync();
         var baselink = $"https://ticketsystem.animegamingcafe.de/transcripts/" + $"{tick}-{id}.html";
 
