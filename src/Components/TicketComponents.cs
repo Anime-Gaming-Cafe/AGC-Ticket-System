@@ -87,4 +87,45 @@ public class TicketComponents
         await interactionCreateEvent.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, responseBuilder);
     }
 
+    public static List<DiscordActionRowComponent> GetNotificationManagerButtons()
+    {
+        var buttons = new List<DiscordButtonComponent>
+        {
+            new DiscordButtonComponent(ButtonStyle.Danger, "disable_notification", "Deaktivieren", true),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode1", "Einmalig Ping", false),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode2", "Einmalig DM", false),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode3", "Einmalig Ping + DM", false),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode4", "Bei jeder Nachricht Ping", false),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode5", "Bei jeder Nachricht DM", false),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode6", "Bei jeder Nachricht Ping + DM", false)
+        };
+        var actionRows = new List<DiscordActionRowComponent>
+        {
+            new DiscordActionRowComponent(buttons.GetRange(0, 5)),
+            new DiscordActionRowComponent(buttons.GetRange(5, 5)),
+            new DiscordActionRowComponent(buttons.GetRange(10, 5))
+        };
+        return actionRows;
+    }
+    
+    public static List<DiscordActionRowComponent> GetNotificationManagerButtonsEnabledNotify()
+    {
+        var buttons = new List<DiscordButtonComponent>
+        {
+            new DiscordButtonComponent(ButtonStyle.Danger, "disable_notification", "Deaktivieren"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode1", "Einmalig Ping"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode2", "Einmalig DM"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode3", "Einmalig Ping + DM"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode4", "Bei jeder Nachricht Ping"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode5", "Bei jeder Nachricht DM"),
+            new DiscordButtonComponent(ButtonStyle.Primary, "enable_noti_mode6", "Bei jeder Nachricht Ping + DM")
+        };
+        var actionRows = new List<DiscordActionRowComponent>
+        {
+            new DiscordActionRowComponent(buttons.GetRange(0, 5)),
+            new DiscordActionRowComponent(buttons.GetRange(5, 5)),
+            new DiscordActionRowComponent(buttons.GetRange(10, 5))
+        };
+        return actionRows;
+    }
 }
