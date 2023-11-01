@@ -10,6 +10,37 @@ namespace AGC_Ticket_System.Managers;
 
 public class NotificationManager
 {
+    
+    public static async Task<List<DiscordMember?>> GetSubscribedStaffs(DiscordChannel channel)
+    {
+        long cid = (long)channel.Id;
+        var constring = DatabaseService.GetConnectionString();
+        await using var con = new NpgsqlConnection(constring);
+        await con.OpenAsync();
+        await using var cmd = new NpgsqlCommand("SELECT user_id FROM subscriptions WHERE channel_id = @cid", con);
+        cmd.Parameters.AddWithValue("cid", cid);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        var L = new List<DiscordMember>();
+        if (reader.HasRows)
+        {
+            while (await reader.ReadAsync())
+            {
+                ulong uid = (ulong)reader.GetInt64(0);
+                var user = await CurrentApplicationData.Client.GetUserAsync(uid);
+                var member = await channel.Guild.GetMemberAsync(uid);
+                if (member == null)
+                {
+                    await SetMode(NotificationMode.Disabled, channel.Id, uid);
+                    continue;
+                }
+                L.Add(member);
+            }
+
+            return L;
+        }
+        return L;
+    }
+    
     public static async Task SetMode(NotificationMode mode, ulong channel_id, ulong user_id)
     {
         long cid = (long)channel_id;
@@ -124,7 +155,6 @@ public class NotificationManager
     public static async Task ChangeMode(DiscordInteraction interaction)
     {
         var customid = interaction.Data.CustomId;
-        Console.WriteLine(customid == "enable_noti_mode1");
         if (customid == "disable_notification")
         {
             await RemoveMode(interaction.Channel.Id, interaction.User.Id);
@@ -132,7 +162,6 @@ public class NotificationManager
         }
         else if (customid == "enable_noti_mode1")
         {
-            Console.WriteLine("SetMode");
             await SetMode(NotificationMode.OnceMention, interaction.Channel.Id, interaction.User.Id);
             await RenderNotificationManagerWithUpdate(interaction);
         }
