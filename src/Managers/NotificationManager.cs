@@ -157,7 +157,6 @@ public class NotificationManager
         var customid = interaction.Data.CustomId;
         if (customid == "disable_notification")
         {
-            Console.WriteLine("Disabling");
             await RemoveMode(interaction.Channel.Id, interaction.User.Id);
             await RenderNotificationManagerWithUpdate(interaction);
         }
